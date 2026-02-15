@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import RangeSlider from './RangeSlider'
 import SmartActionBox from './SmartActionBox'
 import SidebarChat from './SidebarChat'
-import { getAllMakes } from '../data/carMakesModels'
+import { getAllMakes, getModelsByMake } from '../data/carMakesModels'
 import { useAuth } from '../context/AuthContext'
 import apiService from '../services/apiService'
 import './FilterSidebar.css'
@@ -44,6 +44,7 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
   const handleFiltersExtracted = (filterData) => {
     const updates = { ...filters }
     if (filterData.make) updates.make = filterData.make
+    if (filterData.model) updates.model = filterData.model
     if (filterData.yearMin) updates.yearMin = String(filterData.yearMin)
     if (filterData.yearMax) updates.yearMax = String(filterData.yearMax)
     if (filterData.vehicleType) {
@@ -75,11 +76,11 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
 
   const [sections, setSections] = useState({
     make: true,
-    location: true,
-    type: true,
-    year: false,
     price: true,
+    location: true,
+    year: false,
     mileage: false,
+    type: false,
     transmission: false,
     drivetrain: false,
   })
@@ -98,6 +99,7 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
       radius: '',
       vehicleTypes: [],
       make: '',
+      model: '',
       budgetMin: 0,
       budgetMax: 200000,
       yearMin: '',
@@ -107,6 +109,11 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
       drivetrain: '',
     })
   }
+
+  // Compute models list when make is selected
+  const MODELS = filters.make
+    ? [{ value: '', label: 'Any' }, ...getModelsByMake(filters.make)]
+    : []
 
   const chevron = (isOpen) => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -143,21 +150,104 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
         />
       )}
 
-      {/* Make */}
+      {/* Make / Model */}
       <div className="filter-section">
         <button className={`filter-section-toggle${sections.make ? ' open' : ''}`} onClick={() => toggleSection('make')}>
-          <span>Make</span>
+          <span>Make / Model</span>
           {chevron(sections.make)}
         </button>
         {sections.make && (
           <div className="filter-section-body">
             <select
               value={filters.make || ''}
-              onChange={(e) => update('make', e.target.value)}
+              onChange={(e) => onFilterChange({ ...filters, make: e.target.value, model: '' })}
               className="filter-select"
             >
               {MAKES.map((m) => (
                 <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+            {filters.make && (
+              <select
+                value={filters.model || ''}
+                onChange={(e) => update('model', e.target.value)}
+                className="filter-select"
+                style={{ marginTop: 'var(--space-2)' }}
+              >
+                {MODELS.map((m) => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Price Range */}
+      <div className="filter-section">
+        <button className={`filter-section-toggle${sections.price ? ' open' : ''}`} onClick={() => toggleSection('price')}>
+          <span>Price Range</span>
+          {chevron(sections.price)}
+        </button>
+        {sections.price && (
+          <div className="filter-section-body">
+            <RangeSlider
+              min={0}
+              max={200000}
+              step={5000}
+              valueMin={filters.budgetMin || 0}
+              valueMax={filters.budgetMax || 200000}
+              onChange={(vMin, vMax) => onFilterChange({ ...filters, budgetMin: vMin, budgetMax: vMax })}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Year Range */}
+      <div className="filter-section">
+        <button className={`filter-section-toggle${sections.year ? ' open' : ''}`} onClick={() => toggleSection('year')}>
+          <span>Year Range</span>
+          {chevron(sections.year)}
+        </button>
+        {sections.year && (
+          <div className="filter-section-body">
+            <div className="filter-row">
+              <select
+                value={filters.yearMin || ''}
+                onChange={(e) => update('yearMin', e.target.value)}
+                className="filter-select"
+              >
+                <option value="">Min Year</option>
+                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+              <select
+                value={filters.yearMax || ''}
+                onChange={(e) => update('yearMax', e.target.value)}
+                className="filter-select"
+              >
+                <option value="">Max Year</option>
+                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Max Mileage */}
+      <div className="filter-section">
+        <button className={`filter-section-toggle${sections.mileage ? ' open' : ''}`} onClick={() => toggleSection('mileage')}>
+          <span>Max Mileage</span>
+          {chevron(sections.mileage)}
+        </button>
+        {sections.mileage && (
+          <div className="filter-section-body">
+            <select
+              value={filters.mileageMax || ''}
+              onChange={(e) => update('mileageMax', e.target.value)}
+              className="filter-select"
+            >
+              {MILEAGE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
@@ -222,77 +312,6 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
                 <span>{type}</span>
               </label>
             ))}
-          </div>
-        )}
-      </div>
-
-      {/* Year Range */}
-      <div className="filter-section">
-        <button className={`filter-section-toggle${sections.year ? ' open' : ''}`} onClick={() => toggleSection('year')}>
-          <span>Year Range</span>
-          {chevron(sections.year)}
-        </button>
-        {sections.year && (
-          <div className="filter-section-body">
-            <div className="filter-row">
-              <select
-                value={filters.yearMin || ''}
-                onChange={(e) => update('yearMin', e.target.value)}
-                className="filter-select"
-              >
-                <option value="">Min Year</option>
-                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-              </select>
-              <select
-                value={filters.yearMax || ''}
-                onChange={(e) => update('yearMax', e.target.value)}
-                className="filter-select"
-              >
-                <option value="">Max Year</option>
-                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-              </select>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Price Range */}
-      <div className="filter-section">
-        <button className={`filter-section-toggle${sections.price ? ' open' : ''}`} onClick={() => toggleSection('price')}>
-          <span>Price Range</span>
-          {chevron(sections.price)}
-        </button>
-        {sections.price && (
-          <div className="filter-section-body">
-            <RangeSlider
-              min={0}
-              max={200000}
-              step={5000}
-              valueMin={filters.budgetMin || 0}
-              valueMax={filters.budgetMax || 200000}
-              onChange={(vMin, vMax) => onFilterChange({ ...filters, budgetMin: vMin, budgetMax: vMax })}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Mileage */}
-      <div className="filter-section">
-        <button className={`filter-section-toggle${sections.mileage ? ' open' : ''}`} onClick={() => toggleSection('mileage')}>
-          <span>Max Mileage</span>
-          {chevron(sections.mileage)}
-        </button>
-        {sections.mileage && (
-          <div className="filter-section-body">
-            <select
-              value={filters.mileageMax || ''}
-              onChange={(e) => update('mileageMax', e.target.value)}
-              className="filter-select"
-            >
-              {MILEAGE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
           </div>
         )}
       </div>

@@ -96,8 +96,8 @@ export default function SidebarChat({ mode, onFiltersExtracted, onClose }) {
       </div>
 
       <div className="sidebar-chat-input">
-        <input
-          type="text"
+        <textarea
+          rows={2}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}

@@ -5,10 +5,6 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   flex-shrink: 0;
-  position: sticky;
-  top: 80px;
-  max-height: calc(100vh - 100px);
-  overflow-y: auto;
 }
 
 .filter-sidebar-header {

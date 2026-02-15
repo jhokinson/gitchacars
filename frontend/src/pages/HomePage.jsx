@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import apiService from '../services/apiService'
+import { useAuth } from '../context/AuthContext'
 import ListingCard from '../components/ListingCard'
 import FilterSidebar from '../components/FilterSidebar'
 import SortDropdown from '../components/SortDropdown'
@@ -14,6 +15,7 @@ const INITIAL_FILTERS = {
   radius: '',
   vehicleTypes: [],
   make: '',
+  model: '',
   budgetMin: 0,
   budgetMax: 200000,
   yearMin: '',
@@ -25,6 +27,7 @@ const INITIAL_FILTERS = {
 
 export default function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { user, isAuthenticated } = useAuth()
   const [listings, setListings] = useState([])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
@@ -37,11 +40,27 @@ export default function HomePage() {
   const feedRef = useRef(null)
   useScrollReveal(feedRef)
 
+  // Guidance banner dismiss state
+  const [dismissedUnauth] = useState(() => localStorage.getItem('gitcha_dismiss_guide_unauth') === 'true')
+  const [dismissedBuyer] = useState(() => localStorage.getItem('gitcha_dismiss_guide_buyer') === 'true')
+  const [dismissedSeller] = useState(() => localStorage.getItem('gitcha_dismiss_guide_seller') === 'true')
+  const [guideDismissed, setGuideDismissed] = useState({
+    unauth: dismissedUnauth,
+    buyer: dismissedBuyer,
+    seller: dismissedSeller,
+  })
+
+  const dismissGuide = (key) => {
+    localStorage.setItem(`gitcha_dismiss_guide_${key}`, 'true')
+    setGuideDismissed(prev => ({ ...prev, [key]: true }))
+  }
+
   const fetchListings = useCallback(async (pageNum, currentFilters, currentSort) => {
     setLoading(true)
     try {
       const params = { page: pageNum, limit: 10, sort: currentSort }
       if (currentFilters.make) params.make = currentFilters.make
+      if (currentFilters.model) params.model = currentFilters.model
       if (currentFilters.yearMin) params.yearMin = currentFilters.yearMin
       if (currentFilters.yearMax) params.yearMax = currentFilters.yearMax
       if (currentFilters.budgetMin > 0) params.budgetMin = currentFilters.budgetMin
@@ -95,6 +114,12 @@ export default function HomePage() {
     fetchListings(next, filters, sort)
   }
 
+  // Determine which guidance banner to show
+  const userRole = user?.role
+  const showUnauthBanner = !isAuthenticated && !guideDismissed.unauth
+  const showBuyerBanner = isAuthenticated && userRole === 'buyer' && !guideDismissed.buyer && !loading && listings.length === 0
+  const showSellerBanner = isAuthenticated && userRole === 'seller' && !guideDismissed.seller
+
   return (
     <div className="home-page">
       {/* Mobile filter toggle */}
@@ -138,6 +163,46 @@ export default function HomePage() {
           </div>
           <SortDropdown value={sort} onSort={handleSortChange} />
         </div>
+
+        {/* Guidance Banners */}
+        {showUnauthBanner && (
+          <div className="home-guidance">
+            <button className="home-guidance-close" onClick={() => dismissGuide('unauth')} aria-label="Dismiss">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3 className="home-guidance-title">How GitchaCars Works</h3>
+            <p className="home-guidance-body">
+              Buyers post what they want, and sellers introduce matching vehicles. Browse active want listings below, or{' '}
+              <Link to="/auth?mode=register" className="home-guidance-link">create an account</Link>{' '}
+              to post your own or start selling.
+            </p>
+          </div>
+        )}
+
+        {showBuyerBanner && (
+          <div className="home-guidance">
+            <button className="home-guidance-close" onClick={() => dismissGuide('buyer')} aria-label="Dismiss">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3 className="home-guidance-title">Post Your First Want Listing</h3>
+            <p className="home-guidance-body">
+              Tell sellers what you're looking for! Use the AI chat in the sidebar or{' '}
+              <Link to="/create-listing" className="home-guidance-link">create a listing manually</Link>.
+            </p>
+          </div>
+        )}
+
+        {showSellerBanner && (
+          <div className="home-guidance">
+            <button className="home-guidance-close" onClick={() => dismissGuide('seller')} aria-label="Dismiss">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3 className="home-guidance-title">Find Matching Buyers</h3>
+            <p className="home-guidance-body">
+              Browse want listings below to find buyers looking for vehicles you have. Use the filters and AI chat in the sidebar to narrow results.
+            </p>
+          </div>
+        )}
 
         <ErrorBoundary>
         <div className="home-listing-feed" ref={feedRef}>
