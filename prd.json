@@ -1,0 +1,345 @@
+{
+  "project": "GitchaCars UX Overhaul & Private Inventory",
+  "branchName": "ralph/ux-overhaul-private-inventory",
+  "description": "Fix SearchableSelect z-index bug, improve AI chat guidance, rebrand to Private Inventory terminology, and comprehensive UI revamp with scroll animations, premium styling, and page transitions.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Fix SearchableSelect dropdown z-index",
+      "description": "As a user creating a want listing, I want the Make/Model dropdown menus to render above all other form elements so that I can actually see and select options.",
+      "acceptanceCriteria": [
+        "SearchableSelect dropdown renders above accordion sections, other form fields, and all sibling elements",
+        "Set .searchable-select-dropdown z-index to at least 100",
+        "The .accordion-body-wrapper must use overflow: visible (or use a portal approach) so dropdowns are not clipped",
+        "The accordion collapse animation still works correctly after overflow changes",
+        "Dropdown closes when clicking outside",
+        "Works correctly on mobile (375px viewport)",
+        "Verify in browser: Open create-listing manual form, click Make dropdown — all options visible and selectable. Select a Make, click Model dropdown — all model options visible and selectable",
+        "Existing E2E tests still pass: npx playwright test e2e/smart-form.spec.js e2e/want-listings.spec.js e2e/ai-listing-manual.spec.js"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "CRITICAL BUG. The accordion uses maxHeight animation with overflow hidden which clips dropdowns. Fix by changing overflow to visible on open accordions or using React portal for dropdown rendering. Current z-index is 50 in SearchableSelect.css line 34."
+    },
+    {
+      "id": "US-002",
+      "title": "Improve AI Chat greeting and guidance",
+      "description": "As a user on the Create Want Listing page, I want the AI chat to greet me with helpful guidance so that I know what to say and feel supported.",
+      "acceptanceCriteria": [
+        "AI chat displays a hardcoded greeting message on mount (no API call): 'Hey! Let us help you create your want listing. Tell us what kind of car you're looking for — make, model, year range, budget, or just describe your dream car and we'll help fill in the details.'",
+        "Greeting appears immediately when chat loads as an assistant-styled bubble (left-aligned, secondary background)",
+        "Input placeholder updated to: 'Tell us about your dream car...'",
+        "If the AI API fails, show fallback: 'Our AI assistant is temporarily unavailable. Switch to Manual Form to create your listing.' with a clickable button to switch modes",
+        "Verify in browser: Load /create-listing — greeting message immediately visible without any API call",
+        "Existing E2E tests still pass: npx playwright test e2e/ai-listing-chat.spec.js"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Edit AIChatBox.jsx. The current initial message sends an API call to generate a greeting — replace with a hardcoded assistant message in the messages state. The input placeholder is currently 'Describe the car you're looking for...' at line 106."
+    },
+    {
+      "id": "US-003",
+      "title": "AI-generated title and description focus",
+      "description": "As a user chatting with the AI, I want it to generate a compelling listing title and detailed description so that my want listing attracts the right sellers.",
+      "acceptanceCriteria": [
+        "AI system prompt updated to instruct Claude to: (1) extract structured data from conversation, (2) generate a compelling title like 'Looking for a 2020-2024 Honda CR-V under $35k', (3) generate a 2-3 sentence description highlighting preferences",
+        "ListingPreview sidebar shows generated title prominently (larger font) and full description",
+        "When user clicks 'Create Listing' from chat mode, generated title and description are submitted with all extracted fields",
+        "The AI backend endpoint /api/ai/chat system prompt is updated in backend/src/services/aiService.js",
+        "Verify in browser: Chat about wanting a Honda CR-V, see preview update with title and description",
+        "Existing E2E tests still pass: npx playwright test e2e/ai-listing-chat.spec.js"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Update the system prompt in backend/src/services/aiService.js and the ListingPreview component in frontend/src/components/ListingPreview.jsx. The preview should show title and description as the primary content."
+    },
+    {
+      "id": "US-004",
+      "title": "Improve manual form description area",
+      "description": "As a user using the manual form, I want a prominent, well-designed description area so I can write a compelling listing description.",
+      "acceptanceCriteria": [
+        "Description textarea in Features & Details accordion is at least 4 rows tall",
+        "Textarea has placeholder: 'Describe what you're looking for — condition preferences, must-have features, deal-breakers, etc.'",
+        "Textarea has a character count indicator showing '0 / 500'",
+        "Features & Details section auto-opens when user completes Budget & Location section (currently stays closed)",
+        "Title input has auto-generate hint below it: 'Tip: A good title includes year range, make, model, and budget'",
+        "Verify in browser: Fill make/model/year/budget → Features & Details section auto-opens → description textarea visible with character count",
+        "Existing E2E tests still pass: npx playwright test e2e/ai-listing-manual.spec.js e2e/want-listings.spec.js"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Edit CreateListingPage.jsx ListingForm component. Add auto-open logic for details section when s3Complete becomes true. Add character count state tracking. The description textarea is at line 359."
+    },
+    {
+      "id": "US-005",
+      "title": "Private Inventory — NavBar language update",
+      "description": "As a user, I want the navigation to say 'Private Inventory' instead of 'Add Vehicle' so that I understand vehicles are private until introduced.",
+      "acceptanceCriteria": [
+        "NavBar CTA button text changed from 'Add Vehicle' to '+ Private Inventory'",
+        "NavBar CTA title attribute updated to 'Add to Private Inventory'",
+        "Route remains /add-vehicle (no URL changes)",
+        "Mobile view (< 480px) still shows icon-only with label hidden",
+        "Verify in browser: NavBar shows '+ Private Inventory' button when logged in"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Edit NavBar.jsx lines 42-46. Change the text label and title attribute. Do NOT change the route path."
+    },
+    {
+      "id": "US-006",
+      "title": "Private Inventory — Dashboard language update",
+      "description": "As a user on the dashboard, I want to see 'My Private Inventory' instead of 'My Vehicles' so the terminology is consistent.",
+      "acceptanceCriteria": [
+        "DashboardPage section heading changed from 'My Vehicles ({count})' to 'My Private Inventory ({count})'",
+        "CTA button changed from '+ Add Vehicle' to '+ Add to Inventory'",
+        "Empty state message changed to: 'Your private inventory is empty. Add vehicles that only you can see — then introduce them to interested buyers.'",
+        "Empty state CTA changed from 'Add Your First Vehicle' to 'Add Your First Vehicle to Inventory'",
+        "SellerDashboardPage updated with same language changes",
+        "Verify in browser: Dashboard shows 'My Private Inventory' heading and updated empty state copy"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Edit DashboardPage.jsx (line 105 for heading, line 106 for CTA, line 111 for empty message) and SellerDashboardPage.jsx (lines 43-47)."
+    },
+    {
+      "id": "US-007",
+      "title": "Private Inventory — Add/Edit vehicle page language",
+      "description": "As a user adding or editing a vehicle, I want the page to use 'Private Inventory' language.",
+      "acceptanceCriteria": [
+        "AddVehiclePage heading changed from 'Add Vehicle' to 'Add to Private Inventory'",
+        "Submit button changed from 'Add Vehicle' to 'Add to Inventory'",
+        "Subtitle added below heading: 'Vehicles in your private inventory are only visible to you. Introduce them to buyers through their want listings.'",
+        "EditVehiclePage heading changed from 'Edit Vehicle' to 'Edit Inventory Vehicle'",
+        "Description placeholder changed to: 'Describe your vehicle — this will be shown to buyers when you introduce it...'",
+        "Verify in browser: /add-vehicle page shows 'Add to Private Inventory' heading with helper text"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "Edit AddVehiclePage.jsx (heading line 159, submitLabel line 12/160, add subtitle p tag) and EditVehiclePage.jsx (heading line 44). Description placeholder is in the VehicleForm at line 137 of AddVehiclePage."
+    },
+    {
+      "id": "US-008",
+      "title": "Private Inventory — Matches and introduction language",
+      "description": "As a user on the vehicle matches page, I want language that reflects private inventory terminology.",
+      "acceptanceCriteria": [
+        "VehicleMatchesPage: 'Introduce Vehicle' button → 'Introduce from Inventory'",
+        "VehicleMatchesPage: Modal heading 'Introduce Your Vehicle' → 'Introduce Your Vehicle to This Buyer'",
+        "VehicleMatchesPage: Textarea placeholder → 'Write a personal note to the buyer about your vehicle...'",
+        "VehicleMatchesPage: Empty state → 'No matching buyers found for this vehicle yet. Check back as new want listings are posted.'",
+        "WantListingDetailPage: 'Introduce a Vehicle' link → 'Introduce from My Inventory'",
+        "Verify in browser: Navigate to a vehicle's matches page — all labels use updated language"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "Edit VehicleMatchesPage.jsx (lines 62, 73, 85, 96, 98, 104) and WantListingDetailPage.jsx (line 102)."
+    },
+    {
+      "id": "US-009",
+      "title": "Private Inventory — VehicleCard component update",
+      "description": "As a user viewing vehicle cards on the dashboard, I want the card actions to use inventory language.",
+      "acceptanceCriteria": [
+        "VehicleCard 'View Matches' button text changed to 'Find Buyers'",
+        "VehicleCard 'Edit' button remains 'Edit' (no change)",
+        "Verify in browser: Dashboard vehicle cards show 'Find Buyers' button"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "Edit VehicleCard.jsx line 28. Simple text change."
+    },
+    {
+      "id": "US-010",
+      "title": "Design tokens upgrade — border-radius and typography",
+      "description": "As a user, I want the platform to feel more modern with rounder corners and refined typography.",
+      "acceptanceCriteria": [
+        "Update variables.css: --radius-sm: 4px → 6px, --radius-md: 8px → 12px, --radius-lg: 12px → 16px, add --radius-xl: 20px",
+        "Add Inter font weight 300 (light) for secondary text",
+        "Increase heading sizes: --font-3xl: 2rem → 2.25rem, add --font-4xl: 2.75rem",
+        "Add --font-display weight variable set to 700 for hero/page headings",
+        "Add --letter-tight: -0.02em for headings",
+        "All page h1 headings use font-weight: 700 with letter-spacing: -0.02em",
+        "Verify in browser: Corners are noticeably rounder on cards, buttons, inputs. Headings feel bolder and tighter.",
+        "Rebuild frontend: cd frontend && npm run build"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": "Edit frontend/src/styles/variables.css for token updates. Then update base.css or pages.css for h1 heading styles. Rebuild frontend after changes."
+    },
+    {
+      "id": "US-011",
+      "title": "Scroll-triggered card animations",
+      "description": "As a user scrolling through listings, I want cards to animate in with a staggered fade+slide effect.",
+      "acceptanceCriteria": [
+        "Create a useScrollReveal hook using Intersection Observer that triggers animations when elements enter viewport",
+        "Animation: fade in (opacity 0→1) + slide up (translateY 30px→0) with 0.5s ease-out duration",
+        "Stagger: each card has a slight delay offset (50ms per card, max 300ms total)",
+        "Apply to: ListingCard grid on HomePage, VehicleCard grid on Dashboard, IntroCard list on Dashboard",
+        "Cards only animate on first appearance (not on re-scroll)",
+        "prefers-reduced-motion disables all scroll animations",
+        "Verify in browser: Scroll down homepage — listing cards fade in and slide up with stagger effect",
+        "Rebuild frontend: cd frontend && npm run build"
+      ],
+      "priority": 11,
+      "passes": true,
+      "notes": "Create a new hook file at frontend/src/hooks/useScrollReveal.js. Use IntersectionObserver with threshold 0.1. Apply via ref or className to card containers in HomePage.jsx, DashboardPage.jsx."
+    },
+    {
+      "id": "US-012",
+      "title": "Enhanced card hover and interaction effects",
+      "description": "As a user hovering over listing cards, I want polished hover effects that make the interface feel responsive and premium.",
+      "acceptanceCriteria": [
+        "ListingCard hover: translateY(-4px) lift + box-shadow: 0 12px 24px rgba(0,0,0,0.08) + subtle border-color transition",
+        "ListingCard image area: subtle scale(1.03) zoom on hover with overflow: hidden on container",
+        "VehicleCard hover: same lift effect as ListingCard",
+        "All hover transitions use 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        "Button hover: all .btn elements get translateY(-1px) + enhanced shadow on hover",
+        "Active/pressed state: scale(0.97) for click feedback",
+        "Verify in browser: Hover over listing cards — smooth lift with shadow. Hover over buttons — subtle rise.",
+        "Rebuild frontend: cd frontend && npm run build"
+      ],
+      "priority": 12,
+      "passes": true,
+      "notes": "Edit ListingCard.css, VehicleCard.css, and base.css (for global .btn styles). The current card hover is translateY(-3px) — upgrade to -4px with better shadow."
+    },
+    {
+      "id": "US-013",
+      "title": "NavBar visual polish",
+      "description": "As a user, I want a more premium-feeling navigation bar with refined spacing and transitions.",
+      "acceptanceCriteria": [
+        "NavBar add subtle bottom shadow: box-shadow: 0 1px 3px rgba(0,0,0,0.04)",
+        "NavBar height increased from 64px to 68px for more breathing room",
+        "Brand name 'GitchaCars' uses font-weight: 800 (extra-bold)",
+        "Avatar dropdown and notification bell: add 0.2s hover scale effect (scale 1.05)",
+        "NavBar hides (translateY -100%) when scrolling down past 60px, shows when scrolling up",
+        "Hide/show transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        "Verify in browser: Scroll down — NavBar smoothly hides. Scroll up — it reappears.",
+        "Rebuild frontend: cd frontend && npm run build"
+      ],
+      "priority": 13,
+      "passes": true,
+      "notes": "Edit NavBar.jsx to add scroll listener with requestAnimationFrame throttling. Track scroll direction by comparing scrollY. Edit NavBar.css for height, shadow, font-weight changes. Remember to update the body padding-top to match new navbar height (68px)."
+    },
+    {
+      "id": "US-014",
+      "title": "Form input premium styling",
+      "description": "As a user filling out forms, I want inputs that feel modern and responsive with smooth focus transitions.",
+      "acceptanceCriteria": [
+        "All text inputs and textareas: border-radius uses var(--radius-md) (12px after US-010)",
+        "Focus state: border transitions to accent color with soft glow box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12)",
+        "Focus transition duration: 0.2s ease",
+        "Input padding increased to 12px 16px",
+        "Labels: font-weight 500, font-size var(--font-sm), margin-bottom 6px, color var(--color-text-secondary)",
+        "Placeholder text: color var(--color-text-muted) with font-weight 300 (light)",
+        "Select elements: same border-radius and focus treatment as text inputs",
+        "Verify in browser: Click into a form field — smooth blue glow appears. All inputs have rounded corners.",
+        "Rebuild frontend: cd frontend && npm run build"
+      ],
+      "priority": 14,
+      "passes": true,
+      "notes": "Edit base.css or components.css for global input/textarea/select styles. These are global changes so be careful not to break existing layout."
+    },
+    {
+      "id": "US-015",
+      "title": "Page transitions between routes",
+      "description": "As a user navigating between pages, I want smooth transitions so the app feels like a native experience.",
+      "acceptanceCriteria": [
+        "Add CSS page transition: content fades in with opacity 0→1 and translateY(8px→0) on route change",
+        "Transition duration: 0.25s ease-out",
+        "Implement via a wrapper component (e.g. PageTransition) using React key prop tied to location pathname",
+        "No layout shift during transitions (use will-change: opacity, transform)",
+        "prefers-reduced-motion disables page transitions",
+        "Verify in browser: Click between Homepage → Login → Register — each page fades in smoothly",
+        "Rebuild frontend: cd frontend && npm run build"
+      ],
+      "priority": 15,
+      "passes": true,
+      "notes": "Create a PageTransition component that wraps route content in App.jsx. Use useLocation() from react-router-dom to get the key. Apply CSS animation on mount."
+    },
+    {
+      "id": "US-016",
+      "title": "Enhanced empty states",
+      "description": "As a user seeing an empty section, I want personality and clear guidance.",
+      "acceptanceCriteria": [
+        "Dashboard empty states use updated Private Inventory copy from US-006",
+        "Empty states use Lottie animation (already exists) + updated warmer copy with stronger CTAs",
+        "Add subtle background accent (light gradient) behind empty state content",
+        "Empty state CTA buttons use primary gradient style (not outline)",
+        "Introductions empty state: 'No introductions yet. When sellers introduce their vehicles to your listings, they'll appear here.'",
+        "Verify in browser: View dashboard with no listings — Lottie animation, warm copy, prominent CTA",
+        "Rebuild frontend: cd frontend && npm run build"
+      ],
+      "priority": 16,
+      "passes": true,
+      "notes": "Edit DashboardPage.jsx empty states and pages.css for styling. The LottieAnimation component is already available."
+    },
+    {
+      "id": "US-017",
+      "title": "Mobile experience polish",
+      "description": "As a mobile user, I want a native-app quality experience with proper touch targets and spacing.",
+      "acceptanceCriteria": [
+        "All touch targets at least 44px x 44px on mobile",
+        "Card spacing on mobile: gap 16px between listing cards",
+        "Bottom padding on all pages: at least 80px to clear floating elements",
+        "Form inputs on mobile: font-size 16px to prevent iOS zoom",
+        "Listing cards on mobile: full-width with proper image aspect ratio",
+        "NavBar mobile: compact but clear CTA icons",
+        "Verify in browser at 375px viewport: Navigate homepage, dashboard, create-listing — all elements properly sized",
+        "Rebuild frontend: cd frontend && npm run build"
+      ],
+      "priority": 17,
+      "passes": true,
+      "notes": "Add/update @media queries in relevant CSS files. Check existing mobile styles in base.css, ListingCard.css, NavBar.css, pages.css."
+    },
+    {
+      "id": "US-018",
+      "title": "E2E tests — Private Inventory language",
+      "description": "As a developer, I want all E2E tests updated to reflect the new Private Inventory terminology.",
+      "acceptanceCriteria": [
+        "Update seller-dashboard.spec.js: 'Add Vehicle' assertions → 'Private Inventory' or 'Add to Inventory'",
+        "Update unified-dashboard.spec.js: 'My Vehicles' → 'My Private Inventory', 'Add Vehicle' → updated labels",
+        "Update vehicles.spec.js: page heading assertions from 'Add Vehicle' to 'Add to Private Inventory'",
+        "Update navigation.spec.js: NavBar 'Add Vehicle' text → 'Private Inventory'",
+        "Update introductions.spec.js: 'Introduce Vehicle' → 'Introduce from Inventory'",
+        "Update auth-ux.spec.js: 'My Vehicles' assertion → 'My Private Inventory'",
+        "Update visual.spec.js: re-capture baseline screenshots",
+        "All 138+ tests pass: npx playwright test — 0 failures"
+      ],
+      "priority": 18,
+      "passes": true,
+      "notes": "Run npx playwright test first to see which tests fail after language changes, then fix the assertions. Do NOT change test logic — only update text matchers."
+    },
+    {
+      "id": "US-019",
+      "title": "E2E tests — SearchableSelect and form fixes",
+      "description": "As a developer, I want E2E tests that verify the SearchableSelect dropdown renders correctly and AI chat provides guidance.",
+      "acceptanceCriteria": [
+        "New test: SearchableSelect dropdown is visible above other form elements when opened",
+        "New test: AI chat greeting message is immediately visible on page load (no API call)",
+        "New test: AI chat error fallback shows 'switch to Manual Form' message when API fails",
+        "New test: Manual form description textarea has character count indicator",
+        "New test: Features & Details section auto-opens after Budget & Location is completed",
+        "All tests added to existing spec files or a new form-ux.spec.js",
+        "Full suite passes: npx playwright test — 0 failures"
+      ],
+      "priority": 19,
+      "passes": true,
+      "notes": "Add tests to appropriate spec files. The SearchableSelect test should verify the dropdown bounding box is within the viewport and not clipped."
+    },
+    {
+      "id": "US-020",
+      "title": "E2E tests — UI revamp visual verification",
+      "description": "As a developer, I want E2E tests that verify scroll animations, page transitions, and NavBar behavior.",
+      "acceptanceCriteria": [
+        "New test: Scroll down homepage — verify cards have opacity 1 after scrolling into viewport",
+        "New test: NavBar hides when scrolling down 100px, reappears when scrolling up",
+        "New test: Page transition — navigate to /login, verify content visible (opacity 1) after 500ms",
+        "New test: Card hover — verify listing card has elevated box-shadow on hover",
+        "New test: Mobile viewport (375px) — no horizontal overflow on homepage, dashboard, create-listing",
+        "Re-capture all visual regression screenshots in visual.spec.js",
+        "Full suite passes: npx playwright test — 0 failures"
+      ],
+      "priority": 20,
+      "passes": true,
+      "notes": "Add to visual.spec.js or a new ui-animations.spec.js. For scroll tests, use page.evaluate to scroll and then check computed styles."
+    }
+  ]
+}

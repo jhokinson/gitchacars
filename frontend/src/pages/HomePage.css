@@ -1,0 +1,146 @@
+.home-page {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+}
+
+.home-sidebar-desktop {
+  display: block;
+}
+
+.home-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.home-content-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.home-content-title {
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+}
+
+.home-content-count {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.home-listing-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.home-load-more {
+  text-align: center;
+  margin-top: var(--space-6);
+}
+
+.home-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8);
+}
+
+.home-empty {
+  text-align: center;
+  padding: var(--space-8) 0;
+  color: var(--color-text-muted);
+}
+
+.home-empty svg {
+  margin: 0 auto var(--space-4);
+}
+
+.home-empty h3 {
+  font-size: var(--font-lg);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.home-empty p {
+  font-size: var(--font-sm);
+}
+
+.home-error {
+  text-align: center;
+  padding: var(--space-8) 0;
+  color: var(--color-text-muted);
+}
+
+.home-error svg {
+  margin: 0 auto var(--space-4);
+  color: var(--color-danger, #dc2626);
+}
+
+.home-error h3 {
+  font-size: var(--font-lg);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.home-error p {
+  font-size: var(--font-sm);
+  margin-bottom: var(--space-4);
+}
+
+/* Mobile filter toggle */
+.mobile-filter-toggle {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 16px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-sm);
+  font-weight: var(--font-medium);
+  font-family: var(--font-family);
+  color: var(--color-text);
+  cursor: pointer;
+  margin-bottom: var(--space-4);
+  width: 100%;
+  justify-content: center;
+}
+
+.mobile-filter-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1999;
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 768px) {
+  .home-page {
+    flex-direction: column;
+  }
+
+  .home-sidebar-desktop {
+    display: none;
+  }
+
+  .mobile-filter-toggle {
+    display: flex;
+  }
+
+  .mobile-filter-overlay {
+    display: block;
+  }
+
+  .home-content-header {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+}

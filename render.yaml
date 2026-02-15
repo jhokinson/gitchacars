@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: gitchacars
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: PORT
+        value: 10000
+      - key: VITE_DEMO_PASSWORD
+        value: gitcha
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: IMAGIN_API_KEY
+        sync: false

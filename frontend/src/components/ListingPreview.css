@@ -1,0 +1,106 @@
+.listing-preview {
+  padding: var(--space-5);
+}
+
+.listing-preview-progress {
+  margin-bottom: var(--space-4);
+}
+
+.listing-preview-progress-text {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.listing-preview-progress-bar {
+  height: 4px;
+  background: var(--color-border-light);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.listing-preview-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+.listing-preview-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.listing-preview-title {
+  font-size: var(--font-lg);
+  font-weight: var(--font-semibold);
+  margin: 0;
+  transition: opacity 0.3s ease;
+}
+
+.listing-preview-title.placeholder {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.listing-preview-type-label {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+}
+
+.listing-preview-section {
+  margin-bottom: var(--space-3);
+  transition: opacity 0.3s ease;
+}
+
+.listing-preview-vehicle-info {
+  font-size: var(--font-base);
+  font-weight: var(--font-medium);
+}
+
+.listing-preview-vehicle-info.placeholder {
+  color: var(--color-text-muted);
+}
+
+.listing-preview-budget {
+  font-size: var(--font-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-success);
+}
+
+.listing-preview-budget.placeholder {
+  color: var(--color-text-muted);
+  font-weight: var(--font-normal);
+  font-size: var(--font-base);
+}
+
+.listing-preview-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.listing-preview-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.listing-preview-description {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.placeholder {
+  color: var(--color-text-muted);
+}

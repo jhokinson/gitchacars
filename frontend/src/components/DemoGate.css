@@ -1,0 +1,104 @@
+.demo-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0e1a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.demo-gate.demo-gate--hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.demo-gate-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 40px 32px;
+  text-align: center;
+  animation: demoGateFadeIn 0.5s ease;
+}
+
+@keyframes demoGateFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.demo-gate-brand {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+.demo-gate-brand span {
+  color: #3b82f6;
+}
+
+.demo-gate-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 32px;
+  font-weight: 400;
+}
+
+.demo-gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demo-gate-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #e5e7eb;
+  background: #141825;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.demo-gate-input::placeholder {
+  color: #4b5563;
+}
+
+.demo-gate-input:focus {
+  border-color: #3b82f6;
+}
+
+.demo-gate-input.demo-gate-input--error {
+  border-color: #ef4444;
+}
+
+.demo-gate-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: #3b82f6;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.demo-gate-btn:hover {
+  background: #2563eb;
+}
+
+.demo-gate-error {
+  font-size: 13px;
+  color: #ef4444;
+  margin-top: 4px;
+}

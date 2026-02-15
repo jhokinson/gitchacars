@@ -1,0 +1,474 @@
+{
+  "project": "GitchaCars Backend",
+  "branchName": "ralph/gitchacars-backend-mvp",
+  "description": "Demand-first car marketplace backend: Node.js + Express API with Neon Postgres, Firebase Storage, SendGrid email, JWT auth, matching engine, and introduction system.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Project Scaffolding & Express Setup",
+      "description": "As a developer, I want the Express project initialized with the correct folder structure, dependencies, and base configuration so that all other stories have a foundation to build on.",
+      "acceptanceCriteria": [
+        "package.json exists with all required dependencies: express, pg, bcrypt, jsonwebtoken, multer, firebase-admin, @sendgrid/mail, node-cron, dotenv, cors, express-validator, nodemon (dev)",
+        "Project structure created: src/routes, src/controllers, src/models, src/middleware, src/services, src/utils, src/db/migrations, src/db/seeds",
+        "src/app.js sets up Express with JSON body parsing, CORS (allowing all origins for now), and mounts a health check route",
+        "src/server.js imports app.js and listens on process.env.PORT || 3000",
+        "GET /api/health returns { status: 'ok' } with 200",
+        "Global error handling middleware in src/middleware/errorHandler.js returns JSON errors, hides stack traces when NODE_ENV=production",
+        "package.json scripts: start (node src/server.js), dev (nodemon src/server.js), migrate, seed",
+        "dotenv is loaded at the top of server.js",
+        ".env.example file lists all required env vars: DATABASE_URL, JWT_SECRET, SENDGRID_API_KEY, FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, SENDGRID_FROM_EMAIL, FRONTEND_URL",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Database Connection & Migration Runner",
+      "description": "As a developer, I want a database connection pool and migration runner so that I can create and manage the schema.",
+      "acceptanceCriteria": [
+        "src/db/pool.js exports a pg Pool configured from DATABASE_URL with SSL enabled",
+        "src/db/migrate.js reads and executes .sql files from src/db/migrations in alphabetical order",
+        "npm run migrate executes src/db/migrate.js",
+        "Connection errors are logged clearly with the error message",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Database Schema Migration — Users & Zip Codes Tables",
+      "description": "As a developer, I need the users and zip_codes tables created so that auth and location matching can work.",
+      "acceptanceCriteria": [
+        "Migration file 001_users_and_zipcodes.sql creates the users table with: id (UUID PK), email (unique, not null), password_hash, first_name, last_name, role (CHECK buyer/seller/admin), deleted_at, created_at, updated_at",
+        "Migration file creates the zip_codes table with: zip (VARCHAR PK), latitude (DECIMAL 9,6), longitude (DECIMAL 9,6)",
+        "All column types, constraints, and defaults match the schema in the PRD exactly",
+        "Migration runs successfully via npm run migrate",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Database Schema Migration — Want Listings, Vehicles, Introductions, Notifications",
+      "description": "As a developer, I need the remaining 4 tables created so that all API features can be built.",
+      "acceptanceCriteria": [
+        "Migration file 002_core_tables.sql creates want_listings table with all columns, constraints, and indexes from the PRD (status CHECK, idx_want_listings_status, idx_want_listings_make_model on LOWER, idx_want_listings_user)",
+        "Migration creates vehicles table with all columns, constraints, and indexes from the PRD (images TEXT[], status CHECK, idx_vehicles_user, idx_vehicles_make_model on LOWER)",
+        "Migration creates introductions table with all columns, constraints, indexes, and UNIQUE(vehicle_id, want_listing_id) from the PRD",
+        "Migration creates notifications table with all columns, constraints, and indexes from the PRD",
+        "All foreign keys reference users(id) correctly",
+        "Migration runs successfully via npm run migrate",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Zip Code Seed Data",
+      "description": "As a developer, I need the zip_codes table populated with US zip code lat/lng data so that distance matching works.",
+      "acceptanceCriteria": [
+        "A seed file or data file contains US zip code to lat/lng mappings (at least 40,000 entries covering all US zip codes)",
+        "npm run seed (or a dedicated zip code seed script) inserts the data into the zip_codes table using batch inserts for performance",
+        "The seed is idempotent (uses INSERT ON CONFLICT DO NOTHING or truncates first)",
+        "After seeding, querying SELECT COUNT(*) FROM zip_codes returns ~40,000+ rows",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Use a free US zip code dataset (CSV). Download or bundle a static file with the project."
+    },
+    {
+      "id": "US-006",
+      "title": "JWT Auth Middleware",
+      "description": "As a developer, I need JWT middleware and role-check helpers so that protected routes reject unauthenticated or unauthorized requests.",
+      "acceptanceCriteria": [
+        "src/middleware/auth.js exports an authenticate middleware that reads Authorization: Bearer <token>, verifies with JWT_SECRET, and attaches req.user = { userId, role }",
+        "Returns 401 JSON error if token is missing, expired, or invalid",
+        "src/middleware/auth.js exports a requireRole(...roles) middleware that returns 403 if req.user.role is not in the allowed roles",
+        "Both middlewares can be composed: router.get('/path', authenticate, requireRole('buyer'), handler)",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "SendGrid Email Service",
+      "description": "As a developer, I need a reusable email service so that other stories can send emails without duplicating SendGrid logic.",
+      "acceptanceCriteria": [
+        "src/services/emailService.js exports functions: sendWelcomeEmail(user), sendNewIntroEmail(buyer, vehicle, seller), sendIntroAcceptedEmail(seller, buyer, wantListing)",
+        "Each function uses @sendgrid/mail to send an email with a text body (no HTML templates for MVP)",
+        "Email sending is fire-and-forget: errors are caught and logged but never thrown",
+        "SendGrid API key is read from process.env.SENDGRID_API_KEY",
+        "From email is read from process.env.SENDGRID_FROM_EMAIL",
+        "If SENDGRID_API_KEY is not set, functions log a warning and return without sending",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "User Registration Endpoint",
+      "description": "As a new user, I want to register with my email and password so that I can access the marketplace.",
+      "acceptanceCriteria": [
+        "POST /api/auth/register accepts { email, password, firstName, lastName, role }",
+        "role must be exactly 'buyer' or 'seller' — returns 400 otherwise",
+        "Password is hashed with bcrypt (min 10 rounds)",
+        "Email must be unique — returns 409 if duplicate",
+        "On success, inserts a row into users table and returns 201 with { data: { user: { id, email, firstName, lastName, role, createdAt }, token } }",
+        "JWT token contains { userId, role } and expires in 7 days",
+        "sendWelcomeEmail is called (fire-and-forget)",
+        "Validation errors return 400 with { error: { message, fields } }",
+        "Route is defined in src/routes/auth.js, handler in src/controllers/authController.js, DB queries in src/models/userModel.js",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "User Login Endpoint",
+      "description": "As a registered user, I want to log in so that I can access my dashboard.",
+      "acceptanceCriteria": [
+        "POST /api/auth/login accepts { email, password }",
+        "Returns 401 with generic message for invalid credentials (no email/password distinction)",
+        "On success, returns 200 with { data: { user: { id, email, firstName, lastName, role, createdAt }, token } }",
+        "JWT token structure is identical to registration token",
+        "Users with a non-null deleted_at cannot log in — returns 401",
+        "Route is in src/routes/auth.js, handler in src/controllers/authController.js",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Create Want Listing Endpoint",
+      "description": "As a buyer, I want to create a want listing describing the car I'm looking for so that sellers can find me.",
+      "acceptanceCriteria": [
+        "POST /api/want-listings requires auth + buyer role",
+        "Required fields: title, make, model, yearMin, yearMax, budgetMin, budgetMax, zipCode, radiusMiles, mileageMax, description",
+        "Optional fields: transmission (enum: automatic, manual), drivetrain (enum: fwd, rwd, awd, 4wd), condition (enum: new, used)",
+        "Validates yearMin <= yearMax and budgetMin <= budgetMax — returns 400 with field-level errors if not",
+        "Returns 201 with { data: listing } including id, status: 'active', createdAt",
+        "Listing is associated with the authenticated buyer's userId",
+        "Route in src/routes/wantListings.js, handler in src/controllers/wantListingController.js, DB queries in src/models/wantListingModel.js",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-011",
+      "title": "Edit & Archive Want Listing Endpoints",
+      "description": "As a buyer, I want to edit or archive my want listing so that I can update preferences or stop receiving introductions.",
+      "acceptanceCriteria": [
+        "PUT /api/want-listings/:id requires auth + buyer role, only owner can edit (403 otherwise)",
+        "Accepts any subset of create fields (partial update), same validation rules",
+        "Returns 200 with { data: updatedListing }",
+        "PATCH /api/want-listings/:id/archive requires auth + buyer role, only owner can archive (403 otherwise)",
+        "Sets status to 'archived', returns 200 with { data: updatedListing }",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-012",
+      "title": "View & List Want Listing Endpoints",
+      "description": "As a user, I want to browse want listings and view details so that sellers can find buyers.",
+      "acceptanceCriteria": [
+        "GET /api/want-listings (public, no auth) returns only status: 'active' listings ordered by createdAt desc",
+        "Supports pagination: ?page=1&limit=20 (default 20, max 50), returns { data: { listings, total, page, totalPages } }",
+        "Each listing includes buyer: { id, firstName } (no email exposed)",
+        "GET /api/want-listings/mine (auth, buyer role) returns all listings for the authenticated user ordered by createdAt desc, each with introCount",
+        "GET /api/want-listings/:id (public) returns full listing with buyer firstName, returns 404 if not found or archived (unless requester is owner)",
+        "Typecheck passes"
+      ],
+      "priority": 12,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-013",
+      "title": "Firebase Storage Image Upload Service",
+      "description": "As a developer, I need Firebase Admin SDK configured for image uploads so sellers can upload vehicle photos.",
+      "acceptanceCriteria": [
+        "src/services/firebaseService.js initializes Firebase Admin SDK using FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY env vars",
+        "Exports an uploadImage(file, userId) function that uploads a buffer to Firebase Storage under vehicles/{userId}/{uuid}.{ext} and returns the public download URL",
+        "If Firebase env vars are not set, the service logs a warning on initialization",
+        "Typecheck passes"
+      ],
+      "priority": 13,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-014",
+      "title": "Upload Vehicle Image Endpoint",
+      "description": "As a seller, I want to upload images for my vehicle listing.",
+      "acceptanceCriteria": [
+        "POST /api/vehicles/upload-image requires auth + seller role",
+        "Accepts a single image via multipart/form-data (field name: image) using multer",
+        "Validates: JPEG or PNG only, max 5MB — returns 400 with error message if invalid",
+        "Calls firebaseService.uploadImage and returns 200 with { data: { url } }",
+        "Route in src/routes/vehicles.js, handler in src/controllers/vehicleController.js",
+        "Typecheck passes"
+      ],
+      "priority": 14,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-015",
+      "title": "Create Vehicle Endpoint",
+      "description": "As a seller, I want to add a vehicle to my inventory so that I can introduce it to buyers.",
+      "acceptanceCriteria": [
+        "POST /api/vehicles requires auth + seller role",
+        "Required fields: make, model, year, mileage, price, zipCode, description, images (array of 3-5 URLs)",
+        "Optional fields: transmission (enum: automatic, manual), drivetrain (enum: fwd, rwd, awd, 4wd)",
+        "Returns 400 with field-level errors if validation fails (including images array length)",
+        "Returns 201 with { data: vehicle } including id, status: 'active', createdAt",
+        "DB queries in src/models/vehicleModel.js",
+        "Typecheck passes"
+      ],
+      "priority": 15,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-016",
+      "title": "Edit Vehicle & View Vehicle Endpoints",
+      "description": "As a seller, I want to edit my vehicle and view vehicle details.",
+      "acceptanceCriteria": [
+        "PUT /api/vehicles/:id requires auth + seller role, only owner can edit (403 otherwise)",
+        "Accepts any subset of create fields (partial update), if images is provided it replaces the full array (must still be 3-5)",
+        "Returns 200 with { data: updatedVehicle }",
+        "GET /api/vehicles/mine (auth, seller role) returns all vehicles for authenticated user ordered by createdAt desc",
+        "GET /api/vehicles/:id (auth required) returns full vehicle object including all images, 404 if not found",
+        "Typecheck passes"
+      ],
+      "priority": 16,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-017",
+      "title": "Vehicle-to-Want-Listing Matching Engine",
+      "description": "As a seller, I want to see which want listings match my vehicle so that I can introduce it to interested buyers.",
+      "acceptanceCriteria": [
+        "GET /api/vehicles/:id/matches requires auth + seller role, must own the vehicle",
+        "Returns want listings matching ALL criteria: make (case-insensitive), model (case-insensitive), vehicle.year BETWEEN yearMin AND yearMax, vehicle.price BETWEEN budgetMin AND budgetMax, vehicle.mileage <= mileageMax",
+        "Distance between vehicle.zipCode and want_listing.zipCode <= want_listing.radiusMiles, calculated via Haversine formula joining through zip_codes table",
+        "Only returns status: 'active' want listings",
+        "Excludes want listings where an introduction already exists from this vehicle",
+        "Returns matches ordered by createdAt desc, paginated (default 20)",
+        "Response shape: { data: { listings, total, page, totalPages } }",
+        "Typecheck passes"
+      ],
+      "priority": 17,
+      "passes": true,
+      "notes": "Haversine formula: d = 2r * arcsin(sqrt(sin²((lat2-lat1)/2) + cos(lat1)*cos(lat2)*sin²((lng2-lng1)/2))). Use miles (r = 3959)."
+    },
+    {
+      "id": "US-018",
+      "title": "Notification Model & Endpoints",
+      "description": "As a user, I want to see my notifications so I know when something happens.",
+      "acceptanceCriteria": [
+        "src/models/notificationModel.js exports: createNotification({ userId, type, message, relatedId }), getNotifications(userId), markRead(id, userId), markAllRead(userId), getUnreadCount(userId)",
+        "GET /api/notifications (auth required) returns notifications for authenticated user ordered by createdAt desc, each with { id, type, message, read, relatedId, createdAt }",
+        "PATCH /api/notifications/:id/read marks a single notification as read (only owner), returns 200",
+        "PATCH /api/notifications/read-all marks all user's notifications as read, returns 200",
+        "GET /api/notifications/unread-count returns { data: { count } }",
+        "Route in src/routes/notifications.js, handler in src/controllers/notificationController.js",
+        "Typecheck passes"
+      ],
+      "priority": 18,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-019",
+      "title": "Create Introduction Endpoint",
+      "description": "As a seller, I want to introduce my vehicle to a buyer's want listing so that we can connect.",
+      "acceptanceCriteria": [
+        "POST /api/introductions requires auth + seller role",
+        "Accepts { vehicleId, wantListingId, message } — message required, max 500 chars",
+        "Validates: seller owns the vehicle, want listing is active, no existing intro for this vehicle+listing pair (409 if duplicate)",
+        "Creates introduction with status: 'pending', expiresAt = now + 72 hours, buyer_id from the want listing's user_id",
+        "Creates in-app notification for the buyer (type: 'new_intro')",
+        "Calls sendNewIntroEmail (fire-and-forget)",
+        "Returns 201 with { data: introduction }",
+        "Route in src/routes/introductions.js, handler in src/controllers/introductionController.js, DB queries in src/models/introductionModel.js",
+        "Typecheck passes"
+      ],
+      "priority": 19,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-020",
+      "title": "View Introductions Endpoints (Buyer & Seller)",
+      "description": "As a buyer or seller, I want to see introductions I've received or sent.",
+      "acceptanceCriteria": [
+        "GET /api/introductions/received (auth, buyer role) returns intros where want listing belongs to authenticated buyer",
+        "Each intro includes: seller firstName, vehicle summary (make, model, year, price, first image), intro message, status, createdAt",
+        "Supports filter: ?status=pending|accepted|rejected|expired",
+        "GET /api/introductions/sent (auth, seller role) returns intros where vehicle belongs to authenticated seller",
+        "Each intro includes: buyer firstName, want listing summary, vehicle summary, status, createdAt",
+        "Both ordered by createdAt desc",
+        "Typecheck passes"
+      ],
+      "priority": 20,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-021",
+      "title": "Accept & Reject Introduction Endpoints",
+      "description": "As a buyer, I want to accept or reject introductions.",
+      "acceptanceCriteria": [
+        "PATCH /api/introductions/:id/accept requires auth + buyer role, only the buyer who owns the want listing can accept",
+        "Only pending intros can be accepted — returns 400 otherwise",
+        "Sets status to 'accepted', returns 200 with { data: updatedIntroduction }",
+        "Creates in-app notification for the seller (type: 'intro_accepted')",
+        "Calls sendIntroAcceptedEmail (fire-and-forget)",
+        "PATCH /api/introductions/:id/reject requires auth + buyer role, only the buyer who owns the want listing can reject",
+        "Only pending intros can be rejected — returns 400 otherwise",
+        "Sets status to 'rejected', no notification sent, returns 200 with { data: updatedIntroduction }",
+        "Typecheck passes"
+      ],
+      "priority": 21,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-022",
+      "title": "Introduction Expiry Cron Job",
+      "description": "As the system, introductions not acted on within 72 hours should auto-expire.",
+      "acceptanceCriteria": [
+        "A node-cron job is registered in src/server.js (or a dedicated src/jobs/expiryJob.js imported by server.js)",
+        "Runs every hour (cron expression: '0 * * * *')",
+        "Finds all introductions where status = 'pending' AND expires_at < NOW()",
+        "Updates their status to 'expired' in a single SQL UPDATE statement",
+        "Logs the number of expired introductions each run",
+        "No notifications sent on expiry",
+        "Typecheck passes"
+      ],
+      "priority": 22,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-023",
+      "title": "Admin — View Users Endpoint",
+      "description": "As an admin, I want to see all registered users with search and pagination.",
+      "acceptanceCriteria": [
+        "GET /api/admin/users requires auth + admin role",
+        "Returns all users with { id, email, firstName, lastName, role, createdAt }",
+        "Paginated: ?page=1&limit=50 (default limit 50)",
+        "Supports search by email: ?search=jake (case-insensitive partial match)",
+        "Response: { data: { users, total, page, totalPages } }",
+        "Route in src/routes/admin.js, handler in src/controllers/adminController.js",
+        "Typecheck passes"
+      ],
+      "priority": 23,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-024",
+      "title": "Admin — View Listings & Vehicles Endpoints",
+      "description": "As an admin, I want to see all want listings and vehicles regardless of status.",
+      "acceptanceCriteria": [
+        "GET /api/admin/want-listings requires auth + admin role, returns ALL want listings (any status)",
+        "GET /api/admin/vehicles requires auth + admin role, returns ALL vehicles (any status)",
+        "Both paginated with ?page=1&limit=50",
+        "Response shape: { data: { listings/vehicles, total, page, totalPages } }",
+        "Typecheck passes"
+      ],
+      "priority": 24,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-025",
+      "title": "Admin — Delete User Endpoint",
+      "description": "As an admin, I want to soft-delete a user and deactivate their associated data.",
+      "acceptanceCriteria": [
+        "DELETE /api/admin/users/:id requires auth + admin role",
+        "Soft-deletes the user: sets deleted_at to NOW() (does NOT remove from DB)",
+        "Sets status to 'deleted' on all of the user's want listings and vehicles",
+        "Returns 200 with { data: { message: 'User deleted' } }",
+        "Returns 404 if user not found",
+        "Typecheck passes"
+      ],
+      "priority": 25,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-026",
+      "title": "Admin — Delete Listing & Vehicle Endpoints",
+      "description": "As an admin, I want to remove inappropriate listings or vehicles via soft delete.",
+      "acceptanceCriteria": [
+        "DELETE /api/admin/want-listings/:id requires auth + admin role, sets status to 'deleted', returns 200",
+        "DELETE /api/admin/vehicles/:id requires auth + admin role, sets status to 'deleted', returns 200",
+        "Both return 404 if not found",
+        "Typecheck passes"
+      ],
+      "priority": 26,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-027",
+      "title": "Seed Script — Dev Data",
+      "description": "As a developer, I need seed data for development: admin user, sample buyers, sellers, listings, and vehicles.",
+      "acceptanceCriteria": [
+        "npm run seed runs src/db/seeds/seed.js",
+        "Creates 1 admin user with email jhokinson@gmail.com",
+        "Creates 2 buyer users and 2 seller users with sample data",
+        "Creates 2-3 sample want listings for each buyer",
+        "Creates 2-3 sample vehicles for each seller (with placeholder image URLs)",
+        "All passwords are hashed with bcrypt",
+        "Seed is idempotent (clears existing data or uses ON CONFLICT)",
+        "Typecheck passes"
+      ],
+      "priority": 27,
+      "passes": true,
+      "notes": "This runs after migrations and zip code seeding."
+    },
+    {
+      "id": "US-028",
+      "title": "API Response Consistency & Validation Helpers",
+      "description": "As a developer, I want consistent API response shapes and reusable validation across all endpoints.",
+      "acceptanceCriteria": [
+        "src/utils/response.js exports success(res, data, statusCode) and error(res, message, statusCode, fields) helpers",
+        "All existing controllers are updated to use these helpers instead of raw res.json calls",
+        "Success responses use shape: { data: ... } or { data: { items, total, page, totalPages } } for paginated",
+        "Error responses use shape: { error: { message, fields? } }",
+        "All timestamps in responses are ISO 8601 format",
+        "Typecheck passes"
+      ],
+      "priority": 28,
+      "passes": true,
+      "notes": "This is a cleanup/consistency pass over all endpoints built in prior stories."
+    }
+  ]
+}

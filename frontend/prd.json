@@ -1,0 +1,442 @@
+{
+  "project": "GitchaCars Frontend",
+  "branchName": "ralph/gitchacars-frontend",
+  "description": "React frontend for GitchaCars MVP — a demand-first car marketplace with Firebase messaging and Render deployment",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Vite + React Project Scaffold",
+      "description": "As a developer, I need the React project scaffolded with Vite, React Router, folder structure, and environment variable setup so development can begin.",
+      "acceptanceCriteria": [
+        "Vite + React project initialized with `npm create vite@latest` (JavaScript, not TypeScript)",
+        "Dependencies installed: react-router-dom, axios, firebase, jwt-decode",
+        "Project structure created: /src/pages, /src/components, /src/services, /src/hooks, /src/context, App.jsx, main.jsx",
+        "Environment variables defined in .env.example: VITE_API_URL, VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_DATABASE_URL, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_STORAGE_BUCKET, VITE_FIREBASE_MESSAGING_SENDER_ID, VITE_FIREBASE_APP_ID, VITE_USE_MOCKS",
+        "App.jsx has a placeholder route for '/' that renders a 'GitchaCars' heading",
+        "main.jsx wraps App in BrowserRouter",
+        "App loads in browser without errors",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "API Service Layer",
+      "description": "As a developer, I need an apiService.js that wraps Axios with JWT auth and mock data support so all pages can integrate with the backend.",
+      "acceptanceCriteria": [
+        "apiService.js created in /src/services with Axios instance using VITE_API_URL as base URL",
+        "Request interceptor attaches JWT token from localStorage to Authorization header as 'Bearer <token>'",
+        "Response interceptor on 401 clears localStorage token and redirects to /login",
+        "apiService exports namespaced methods: auth.register, auth.login, wantListings.list, wantListings.getMine, wantListings.get, wantListings.create, wantListings.update, wantListings.archive, vehicles.list, vehicles.getMine, vehicles.get, vehicles.create, vehicles.update, vehicles.uploadImage, vehicles.getMatches, introductions.create, introductions.getReceived, introductions.getSent, introductions.accept, introductions.reject, notifications.getAll, notifications.getUnreadCount, notifications.markRead, notifications.markAllRead, admin.getUsers, admin.deleteUser, admin.getWantListings, admin.deleteWantListing, admin.getVehicles, admin.deleteVehicle",
+        "mockData.js created in /src/services with fake responses for all endpoints",
+        "apiService conditionally returns mock data when VITE_USE_MOCKS=true",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Firebase Service Initialization",
+      "description": "As a developer, I need Firebase initialized so chat and storage features can be built.",
+      "acceptanceCriteria": [
+        "firebaseService.js created in /src/services",
+        "Initializes Firebase app using env vars: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_DATABASE_URL, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_STORAGE_BUCKET, VITE_FIREBASE_MESSAGING_SENDER_ID, VITE_FIREBASE_APP_ID",
+        "Exports initialized firebase app, database (getDatabase), storage (getStorage), and auth (getAuth) instances",
+        "Handles case where env vars are missing gracefully (logs warning, does not crash)",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Auth Context & Protected Routes",
+      "description": "As a developer, I need global auth state and route guards so pages can check login status and user roles.",
+      "acceptanceCriteria": [
+        "AuthContext created in /src/context/AuthContext.jsx providing: user, token, login(data), logout(), isAuthenticated, isRole(role)",
+        "On app load, checks localStorage for existing token, decodes expiry with jwt-decode, restores user state if valid",
+        "login(data) stores token and user in localStorage and context state",
+        "logout() clears localStorage and context state, redirects to /login",
+        "ProtectedRoute component in /src/components redirects to /login if not authenticated",
+        "RoleRoute component in /src/components redirects to / if user lacks required role",
+        "App.jsx wraps routes in AuthProvider",
+        "Verify in browser: unauthenticated user visiting /buyer/dashboard is redirected to /login",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Navigation Bar & Layout",
+      "description": "As a user, I need consistent navigation across all pages with role-based links.",
+      "acceptanceCriteria": [
+        "NavBar component created in /src/components/NavBar.jsx",
+        "Fixed top nav bar (60px height) with logo/site name linking to /",
+        "If not logged in: shows Login and Register links",
+        "If buyer: shows Home, My Dashboard (/buyer/dashboard), Introductions, Messages, Logout",
+        "If seller: shows Home, My Dashboard (/seller/dashboard), Introductions, Messages, Logout",
+        "If admin: shows Home, Admin, Logout",
+        "Layout component wraps page content: max-width 1200px, centered, below nav bar",
+        "NavBar included in App.jsx so it appears on all pages",
+        "Basic CSS: clean nav styling, white background, subtle bottom border",
+        "Responsive: works on desktop (1024px+) and tablet (768px+)",
+        "Verify in browser: navigation renders correctly based on auth state",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Registration Page",
+      "description": "As a new user, I want to register so I can use the marketplace.",
+      "acceptanceCriteria": [
+        "Route /register renders RegisterPage in /src/pages/RegisterPage.jsx",
+        "Form fields: first name, last name, email, password, confirm password, role selector (buyer/seller radio buttons)",
+        "Client-side validation: all fields required, email format check, password min 8 chars, passwords must match",
+        "On submit calls apiService.auth.register with form data",
+        "On success: calls AuthContext login() with response data, redirects to role-appropriate dashboard",
+        "On error: displays server error message below the form",
+        "Basic form CSS: labels above inputs, full-width inputs, clear error states in red",
+        "Verify in browser: can register a new account and land on dashboard",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Login Page",
+      "description": "As a returning user, I want to log in to access my account.",
+      "acceptanceCriteria": [
+        "Route /login renders LoginPage in /src/pages/LoginPage.jsx",
+        "Form fields: email, password",
+        "On submit calls apiService.auth.login with email and password",
+        "On success: calls AuthContext login() with response data, redirects to role-appropriate dashboard (/buyer/dashboard, /seller/dashboard, or /admin)",
+        "On error: displays 'Invalid email or password' message",
+        "Link to /register for new users",
+        "Verify in browser: can log in and reach dashboard",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Home Page — Want Listing Feed",
+      "description": "As any visitor, I want to browse the want listing feed to see what buyers are looking for.",
+      "acceptanceCriteria": [
+        "Route / renders HomePage in /src/pages/HomePage.jsx",
+        "Fetches GET /api/want-listings on load via apiService.wantListings.list()",
+        "ListingCard component created in /src/components/ListingCard.jsx: displays title, make, model, year range, budget range, location, posted time",
+        "Cards rendered in a responsive grid layout",
+        "Load More button at bottom fetches next page of results",
+        "Clicking a card navigates to /want-listings/:id",
+        "Card CSS: white background, subtle border (1px solid #e0e0e0), consistent padding (16px), border-radius 8px",
+        "Verify in browser: feed loads, cards display, pagination works",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Want Listing Detail Page",
+      "description": "As a user, I want to view a single want listing's full details.",
+      "acceptanceCriteria": [
+        "Route /want-listings/:id renders WantListingDetailPage in /src/pages/WantListingDetailPage.jsx",
+        "Fetches listing by id via apiService.wantListings.get(id)",
+        "Displays all listing fields: title, make, model, year range, budget range, location, mileage max, transmission, drivetrain, condition, description",
+        "If viewer is a seller: shows 'Introduce a Vehicle' button linking to introduction flow",
+        "If viewer is the listing owner (buyer): shows Edit button linking to /buyer/edit-listing/:id and Archive button calling apiService.wantListings.archive(id)",
+        "Verify in browser: detail page renders all fields correctly",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Create Want Listing Page",
+      "description": "As a buyer, I want to create a want listing describing the car I'm looking for.",
+      "acceptanceCriteria": [
+        "Route /buyer/create-listing renders CreateListingPage in /src/pages/CreateListingPage.jsx (protected, buyer role)",
+        "Form fields: title, make, model, year min, year max, budget min, budget max, zip code, radius, mileage max, description (all required)",
+        "Optional fields: transmission (dropdown: Any, Automatic, Manual), drivetrain (dropdown: Any, FWD, RWD, AWD, 4WD), condition (dropdown: Any, New, Used, Certified Pre-Owned)",
+        "Client-side validation: all required fields filled, year/budget min <= max, zip code 5 digits",
+        "On submit calls apiService.wantListings.create(data)",
+        "On success: redirects to /buyer/dashboard",
+        "On error: shows field-level error messages",
+        "Verify in browser: can create a listing and see it on dashboard",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-011",
+      "title": "Edit Want Listing Page",
+      "description": "As a buyer, I want to edit an existing want listing.",
+      "acceptanceCriteria": [
+        "Route /buyer/edit-listing/:id renders EditListingPage in /src/pages/EditListingPage.jsx (protected, buyer role)",
+        "On load fetches existing listing data via apiService.wantListings.get(id) and pre-fills form",
+        "Uses same form layout as CreateListingPage",
+        "On submit calls apiService.wantListings.update(id, data)",
+        "On success: redirects to /buyer/dashboard",
+        "Verify in browser: edits persist after save",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-012",
+      "title": "Buyer Dashboard — My Listings Section",
+      "description": "As a buyer, I want to see my want listings on my dashboard.",
+      "acceptanceCriteria": [
+        "Route /buyer/dashboard renders BuyerDashboardPage in /src/pages/BuyerDashboardPage.jsx (protected, buyer role)",
+        "My Want Listings section fetches apiService.wantListings.getMine() and displays as a list",
+        "Each listing shows title, make/model, year range, status badge (active/archived)",
+        "Link to create a new listing (/buyer/create-listing)",
+        "Each listing links to its detail page or edit page",
+        "Verify in browser: buyer dashboard loads and shows listings",
+        "Typecheck passes"
+      ],
+      "priority": 12,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-013",
+      "title": "Buyer Dashboard — Introductions Section",
+      "description": "As a buyer, I want to view and respond to introductions on my dashboard.",
+      "acceptanceCriteria": [
+        "My Introductions section added to BuyerDashboardPage",
+        "Fetches apiService.introductions.getReceived() and displays as IntroCard components",
+        "IntroCard component created in /src/components/IntroCard.jsx showing: vehicle thumbnail (first image), make/model/year, price, seller message, status",
+        "Pending intros shown prominently with Accept and Reject buttons",
+        "Accept button calls apiService.introductions.accept(id), Reject calls apiService.introductions.reject(id)",
+        "After accepting, a 'Message Seller' button appears linking to /messages/:introductionId",
+        "Verify in browser: introductions display, accept/reject buttons work",
+        "Typecheck passes"
+      ],
+      "priority": 13,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-014",
+      "title": "Add Vehicle Page with Image Upload",
+      "description": "As a seller, I want to add a vehicle with images to my inventory.",
+      "acceptanceCriteria": [
+        "Route /seller/add-vehicle renders AddVehiclePage in /src/pages/AddVehiclePage.jsx (protected, seller role)",
+        "Form fields: make, model, year, mileage, price, zip code, description (all required), transmission (optional dropdown), drivetrain (optional dropdown)",
+        "ImageUploader component created in /src/components/ImageUploader.jsx: allows selecting 3-5 images",
+        "Each image uploads immediately via apiService.vehicles.uploadImage(file)",
+        "Shows thumbnail preview after upload and a spinner during upload",
+        "Can remove an uploaded image before submit",
+        "On submit calls apiService.vehicles.create(data) with collected image URLs",
+        "On success: redirects to /seller/dashboard",
+        "Verify in browser: can upload images and create a vehicle",
+        "Typecheck passes"
+      ],
+      "priority": 14,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-015",
+      "title": "Edit Vehicle Page",
+      "description": "As a seller, I want to edit my vehicle listing.",
+      "acceptanceCriteria": [
+        "Route /seller/edit-vehicle/:id renders EditVehiclePage in /src/pages/EditVehiclePage.jsx (protected, seller role)",
+        "On load fetches existing vehicle data via apiService.vehicles.get(id) and pre-fills form including image previews",
+        "Can remove existing images and upload new ones (must maintain 3-5 total)",
+        "On submit calls apiService.vehicles.update(id, data)",
+        "On success: redirects to /seller/dashboard",
+        "Verify in browser: edits persist after save",
+        "Typecheck passes"
+      ],
+      "priority": 15,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-016",
+      "title": "Seller Dashboard",
+      "description": "As a seller, I want a dashboard to manage my vehicles and see my introductions.",
+      "acceptanceCriteria": [
+        "Route /seller/dashboard renders SellerDashboardPage in /src/pages/SellerDashboardPage.jsx (protected, seller role)",
+        "My Vehicles section fetches apiService.vehicles.getMine() and displays as VehicleCard components",
+        "VehicleCard component created in /src/components/VehicleCard.jsx: shows thumbnail, make/model/year, price",
+        "Each vehicle card links to /seller/vehicles/:id/matches and to /seller/edit-vehicle/:id",
+        "Link to add a new vehicle (/seller/add-vehicle)",
+        "My Introductions section fetches apiService.introductions.getSent() and shows status of each (pending, accepted, rejected, expired)",
+        "For accepted intros shows 'Message Buyer' button linking to /messages/:introductionId",
+        "Verify in browser: seller dashboard loads, vehicles and intros display correctly",
+        "Typecheck passes"
+      ],
+      "priority": 16,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-017",
+      "title": "Vehicle Matches Page",
+      "description": "As a seller, I want to see which want listings match my vehicle so I can introduce it.",
+      "acceptanceCriteria": [
+        "Route /seller/vehicles/:id/matches renders VehicleMatchesPage in /src/pages/VehicleMatchesPage.jsx (protected, seller role)",
+        "Fetches apiService.vehicles.getMatches(vehicleId) and displays matching want listings as ListingCard components",
+        "Each card has an 'Introduce Vehicle' button",
+        "Clicking 'Introduce Vehicle' opens a modal with a textarea for intro message (max 500 chars) and a Send button",
+        "On submit calls apiService.introductions.create({ vehicleId, wantListingId, message })",
+        "On success: card updates to show 'Introduced' state, button disabled",
+        "Verify in browser: matches display, can send introduction",
+        "Typecheck passes"
+      ],
+      "priority": 17,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-018",
+      "title": "Introductions Page with Filters",
+      "description": "As a user, I want a dedicated page to manage all my introductions with filtering.",
+      "acceptanceCriteria": [
+        "Route /introductions renders IntroductionsPage in /src/pages/IntroductionsPage.jsx (protected, any authenticated role)",
+        "Buyers see received intros (apiService.introductions.getReceived), sellers see sent intros (apiService.introductions.getSent)",
+        "Filter tabs or toggle: All, Pending, Accepted, Rejected, Expired",
+        "Uses IntroCard component for each introduction",
+        "Buyers can accept/reject pending intros from this page",
+        "Verify in browser: introductions list with filters works",
+        "Typecheck passes"
+      ],
+      "priority": 18,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-019",
+      "title": "Messaging — Conversation List",
+      "description": "As a user with accepted introductions, I want to see a list of my active conversations.",
+      "acceptanceCriteria": [
+        "Route /messages renders MessagesPage in /src/pages/MessagesPage.jsx (protected)",
+        "Fetches accepted introductions to build conversation list",
+        "Each conversation row shows: other party's name, last message preview, unread indicator",
+        "Clicking a conversation navigates to /messages/:introductionId",
+        "Uses Firebase Realtime Database to read last message from chats/{introductionId}",
+        "Verify in browser: conversation list displays with data from accepted intros",
+        "Typecheck passes"
+      ],
+      "priority": 19,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-020",
+      "title": "Messaging — Chat UI",
+      "description": "As a user, I want to send and receive real-time messages in a conversation.",
+      "acceptanceCriteria": [
+        "Route /messages/:introductionId renders ChatPage in /src/pages/ChatPage.jsx (protected)",
+        "Creates/reads Firebase Realtime Database chat room at path chats/{introductionId}",
+        "Message structure: { senderId, text, imageUrl (null), timestamp }",
+        "Message list with sender alignment: own messages right-aligned, theirs left-aligned",
+        "Text input + send button at bottom of chat",
+        "Messages load in real-time via Firebase onValue listener",
+        "Auto-scrolls to bottom on new messages",
+        "Sending a message pushes to Firebase and calls apiService.notifications.create for the recipient",
+        "Verify in browser: can send and receive messages in real-time",
+        "Typecheck passes"
+      ],
+      "priority": 20,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-021",
+      "title": "Notification Bell Dropdown",
+      "description": "As a user, I want to see my notifications so I don't miss introductions or messages.",
+      "acceptanceCriteria": [
+        "NotificationBell component created in /src/components/NotificationBell.jsx",
+        "Bell icon in NavBar visible on all authenticated pages",
+        "Badge shows unread count fetched from apiService.notifications.getUnreadCount() every 30 seconds",
+        "Clicking bell opens a dropdown listing recent notifications via apiService.notifications.getAll()",
+        "Each notification is clickable and navigates to the relevant page (introductions or messages)",
+        "Mark all as read button calls apiService.notifications.markAllRead()",
+        "Verify in browser: notifications appear after intros are created/accepted",
+        "Typecheck passes"
+      ],
+      "priority": 21,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-022",
+      "title": "Admin Panel — Users Tab",
+      "description": "As an admin, I want to view and manage users.",
+      "acceptanceCriteria": [
+        "Route /admin renders AdminPage in /src/pages/AdminPage.jsx (protected, admin role)",
+        "Three tab buttons: Users (active by default), Want Listings, Vehicles",
+        "Users tab: table with columns id, name, email, role, created date",
+        "Search box filters users by email",
+        "Fetches apiService.admin.getUsers(params) with pagination (50 per page)",
+        "Delete button per row with confirmation dialog, calls apiService.admin.deleteUser(id)",
+        "Verify in browser: admin can view users and delete them",
+        "Typecheck passes"
+      ],
+      "priority": 22,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-023",
+      "title": "Admin Panel — Listings & Vehicles Tabs",
+      "description": "As an admin, I want to view and manage want listings and vehicles.",
+      "acceptanceCriteria": [
+        "Want Listings tab on AdminPage: table with id, title, make/model, buyer name, status, created date",
+        "Fetches apiService.admin.getWantListings(params) with pagination (50 per page)",
+        "Delete button per row with confirmation dialog, calls apiService.admin.deleteWantListing(id)",
+        "Vehicles tab on AdminPage: table with id, make/model/year, seller name, price, status, created date",
+        "Fetches apiService.admin.getVehicles(params) with pagination (50 per page)",
+        "Delete button per row with confirmation dialog, calls apiService.admin.deleteVehicle(id)",
+        "Verify in browser: admin can view listings, vehicles and delete them",
+        "Typecheck passes"
+      ],
+      "priority": 23,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-024",
+      "title": "Route Wiring & Final Integration",
+      "description": "As a developer, I need all routes properly wired in App.jsx with correct guards and the full routing table verified.",
+      "acceptanceCriteria": [
+        "App.jsx contains all routes from the routing table: /, /login, /register, /want-listings/:id, /buyer/dashboard, /buyer/create-listing, /buyer/edit-listing/:id, /seller/dashboard, /seller/add-vehicle, /seller/edit-vehicle/:id, /seller/vehicles/:id/matches, /introductions, /messages, /messages/:introductionId, /admin",
+        "All protected routes wrapped in ProtectedRoute",
+        "All role-gated routes wrapped in RoleRoute with correct role",
+        "After login/register, users redirect to role-specific dashboard",
+        "Unauthenticated users hitting protected routes redirect to /login",
+        "Wrong-role users hitting role-gated routes redirect to /",
+        "Verify in browser: full navigation flow works for buyer, seller, and admin roles",
+        "Typecheck passes"
+      ],
+      "priority": 24,
+      "passes": true,
+      "notes": ""
+    }
+  ]
+}

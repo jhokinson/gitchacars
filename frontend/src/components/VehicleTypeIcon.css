@@ -1,0 +1,4 @@
+.vehicle-type-icon {
+  display: inline-block;
+  flex-shrink: 0;
+}

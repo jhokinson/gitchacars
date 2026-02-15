@@ -1,0 +1,88 @@
+:root {
+  /* Colors — Primary */
+  --color-primary: #1B2A4A;
+  --color-primary-hover: #152240;
+  --color-accent: #2563EB;
+  --color-accent-hover: #1D4ED8;
+
+  /* Colors — Background */
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #F8F9FA;
+  --color-bg-hover: #F1F3F5;
+
+  /* Colors — Text */
+  --color-text: #1B2A4A;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+
+  /* Colors — Border */
+  --color-border: #E5E7EB;
+  --color-border-light: #F3F4F6;
+
+  /* Colors — Status */
+  --color-success: #059669;
+  --color-success-bg: #ECFDF5;
+  --color-warning: #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-danger: #DC2626;
+  --color-danger-bg: #FEF2F2;
+
+  /* Typography */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-xs: 0.75rem;
+  --font-sm: 0.875rem;
+  --font-base: 0.9375rem;
+  --font-lg: 1.125rem;
+  --font-xl: 1.25rem;
+  --font-2xl: 1.5rem;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #1B2A4A 0%, #2563EB 100%);
+  --gradient-subtle: linear-gradient(180deg, #F8F9FA 0%, #FFFFFF 100%);
+
+  /* Typography — Extended */
+  --font-3xl: 2.25rem;
+  --font-4xl: 2.75rem;
+  --font-light: 300;
+  --font-display: 700;
+  --letter-tight: -0.02em;
+
+  /* Colors — Strategic Accents */
+  --color-accent-light: rgba(37, 99, 235, 0.08);
+  --color-accent-medium: rgba(37, 99, 235, 0.15);
+  --color-primary-light: rgba(27, 42, 74, 0.06);
+  --color-success-light: rgba(5, 150, 105, 0.08);
+  --color-tag-bg: #EFF6FF;
+  --color-tag-text: #1E40AF;
+
+  /* Transitions */
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}

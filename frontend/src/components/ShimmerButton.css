@@ -1,0 +1,155 @@
+.shimmer-btn {
+  --shimmer-color: #ffffff;
+  --shimmer-bg: var(--color-accent);
+  --shimmer-radius: 100px;
+  --shimmer-speed: 3s;
+  --shimmer-cut: 0.05em;
+
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 24px;
+  color: #fff;
+  background: var(--shimmer-bg);
+  border-radius: var(--shimmer-radius);
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  font-weight: var(--font-semibold);
+  transform: translateZ(0);
+  transition: transform 0.3s ease-in-out;
+}
+
+.shimmer-btn:active {
+  transform: translateY(1px);
+}
+
+/* Spark container */
+.shimmer-btn-spark {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  overflow: visible;
+  filter: blur(2px);
+  container-type: size;
+}
+
+/* Spark element */
+.shimmer-btn-spark-inner {
+  position: absolute;
+  inset: 0;
+  height: 100cqh;
+  aspect-ratio: 1;
+  border-radius: 0;
+  animation: shimmer-slide var(--shimmer-speed) ease-in-out infinite alternate;
+}
+
+/* Rotating conic gradient */
+.shimmer-btn-spark-gradient {
+  position: absolute;
+  inset: -100%;
+  width: auto;
+  rotate: 0deg;
+  background: conic-gradient(
+    from calc(270deg - 45deg),
+    transparent 0,
+    var(--shimmer-color) 90deg,
+    transparent 90deg
+  );
+  translate: 0 0;
+  animation: spin-around calc(var(--shimmer-speed) * 2) infinite linear;
+}
+
+/* Highlight overlay */
+.shimmer-btn-highlight {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-lg);
+  padding: 6px 16px;
+  box-shadow: inset 0 -8px 10px rgba(255, 255, 255, 0.12);
+  transition: box-shadow 0.3s ease-in-out;
+  pointer-events: none;
+}
+
+.shimmer-btn:hover .shimmer-btn-highlight {
+  box-shadow: inset 0 -6px 10px rgba(255, 255, 255, 0.25);
+}
+
+.shimmer-btn:active .shimmer-btn-highlight {
+  box-shadow: inset 0 -10px 10px rgba(255, 255, 255, 0.25);
+}
+
+/* Backdrop (solid color behind text, with cut gap for shimmer) */
+.shimmer-btn-backdrop {
+  position: absolute;
+  z-index: -2;
+  inset: var(--shimmer-cut);
+  background: var(--shimmer-bg);
+  border-radius: var(--shimmer-radius);
+}
+
+/* Content z-index */
+.shimmer-btn-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Disabled state */
+.shimmer-btn:disabled {
+  background: var(--color-text-muted);
+  border-color: transparent;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.shimmer-btn:disabled .shimmer-btn-spark {
+  display: none;
+}
+
+.shimmer-btn:disabled .shimmer-btn-highlight {
+  box-shadow: none;
+}
+
+.shimmer-btn:disabled .shimmer-btn-backdrop {
+  background: var(--color-text-muted);
+}
+
+/* Full width variant */
+.shimmer-btn-full {
+  width: 100%;
+}
+
+@keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+  }
+}
+
+@keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0);
+  }
+  15%, 35% {
+    transform: translateZ(0) rotate(90deg);
+  }
+  65%, 85% {
+    transform: translateZ(0) rotate(270deg);
+  }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-btn-spark-inner,
+  .shimmer-btn-spark-gradient {
+    animation: none;
+  }
+}

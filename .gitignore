@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Environment variables (never commit real secrets)
+.env
+backend/.env
+frontend/.env
+
+# Build artifacts
+dist/
+frontend/dist/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Test output
+test-results/
+playwright-report/
+
+# Editor / tool files
+.claude/settings.local.json
+
+# Misc
+backend/package-lock 2.json

@@ -1,0 +1,61 @@
+.aurora-background {
+  position: relative;
+  overflow: hidden;
+}
+
+.aurora-background-layer {
+  position: absolute;
+  inset: -10px;
+  pointer-events: none;
+  opacity: 0.35;
+  filter: blur(10px);
+  will-change: transform;
+  background-image:
+    repeating-linear-gradient(100deg, #fff 0%, #fff 7%, transparent 10%, transparent 12%, #fff 16%),
+    repeating-linear-gradient(100deg, #2563EB 10%, #818CF8 15%, #93C5FD 20%, #C4B5FD 25%, #60A5FA 30%);
+  background-size: 300% 200%;
+  background-position: 50% 50%;
+  animation: aurora 60s linear infinite;
+  z-index: 0;
+}
+
+.aurora-background-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(100deg, #fff 0%, #fff 7%, transparent 10%, transparent 12%, #fff 16%),
+    repeating-linear-gradient(100deg, #2563EB 10%, #818CF8 15%, #93C5FD 20%, #C4B5FD 25%, #60A5FA 30%);
+  background-size: 200% 100%;
+  animation: aurora 60s linear infinite;
+  background-attachment: fixed;
+  mix-blend-mode: difference;
+}
+
+.aurora-background-layer--masked {
+  mask-image: radial-gradient(ellipse at 100% 0%, black 10%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 100% 0%, black 10%, transparent 70%);
+}
+
+.aurora-background-content {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes aurora {
+  from {
+    background-position: 50% 50%, 50% 50%;
+  }
+  to {
+    background-position: 350% 50%, 350% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-background-layer {
+    animation: none;
+  }
+  .aurora-background-layer::after {
+    animation: none;
+  }
+}
