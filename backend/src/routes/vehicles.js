@@ -10,6 +10,11 @@ const upload = multer({
 
 const router = Router();
 
+// Public routes (no auth) — must be BEFORE /:id to avoid parameter capture
+router.get('/makes', vehicleController.getVehicleMakes);
+router.get('/models/:make', vehicleController.getVehicleModels);
+
+// Authenticated routes
 router.post('/upload-image', authenticate, upload.single('image'), vehicleController.uploadVehicleImage);
 router.post('/', authenticate, vehicleController.createVehicle);
 router.put('/:id', authenticate, vehicleController.updateVehicle);

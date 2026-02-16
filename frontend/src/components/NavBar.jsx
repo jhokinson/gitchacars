@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import NotificationBell from './NotificationBell'
 import AvatarDropdown from './AvatarDropdown'
 import './NavBar.css'
@@ -8,6 +9,7 @@ import './NavBar.css'
 export default function NavBar() {
   const { isAuthenticated, isRole } = useAuth()
   const location = useLocation()
+  const toast = useToast()
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -38,19 +40,34 @@ export default function NavBar() {
           <Link to="/" className={`navbar-link${isActive('/') ? ' active' : ''}`}>
             Browse
           </Link>
-          {isAuthenticated && (
-            <>
-              <Link to="/dashboard" className={`navbar-link${isActive('/dashboard') ? ' active' : ''}`}>
-                Dashboard
-              </Link>
-              <Link to="/create-listing" className={`navbar-link${isActive('/create-listing') ? ' active' : ''}`}>
-                Post Want
-              </Link>
-              <Link to="/add-vehicle" className={`navbar-link${isActive('/add-vehicle') ? ' active' : ''}`}>
-                Add Vehicle
-              </Link>
-            </>
-          )}
+          <Link
+            to={isAuthenticated ? '/dashboard' : '#'}
+            className={`navbar-link${isActive('/dashboard') ? ' active' : ''}`}
+            onClick={(e) => {
+              if (!isAuthenticated) {
+                e.preventDefault()
+                toast.info(
+                  <>Sign in to access Dashboard. <a href="/auth?mode=login&redirect=/dashboard" style={{ color: '#fff', textDecoration: 'underline' }}>Sign In</a></>
+                )
+              }
+            }}
+          >
+            Dashboard
+          </Link>
+          <Link
+            to={isAuthenticated ? '/add-vehicle' : '#'}
+            className={`navbar-link${isActive('/add-vehicle') ? ' active' : ''}`}
+            onClick={(e) => {
+              if (!isAuthenticated) {
+                e.preventDefault()
+                toast.info(
+                  <>Sign in to access Add Vehicle. <a href="/auth?mode=login&redirect=/add-vehicle" style={{ color: '#fff', textDecoration: 'underline' }}>Sign In</a></>
+                )
+              }
+            }}
+          >
+            Add Vehicle
+          </Link>
           {isAuthenticated && isRole('admin') && (
             <Link to="/admin" className={`navbar-link${isActive('/admin') ? ' active' : ''}`}>
               Admin
@@ -58,8 +75,27 @@ export default function NavBar() {
           )}
         </div>
 
-        {/* Right side: auth buttons or user controls */}
+        {/* Right side: CTA + auth buttons or user controls */}
         <div className="navbar-right">
+          {/* CTA Button — always visible */}
+          <Link
+            to={isAuthenticated ? '/create-listing' : '#'}
+            className="btn btn-primary btn-sm navbar-cta"
+            onClick={(e) => {
+              if (!isAuthenticated) {
+                e.preventDefault()
+                toast.info(
+                  <>Sign in to post a want listing. <a href="/auth?mode=login&redirect=/create-listing" style={{ color: '#fff', textDecoration: 'underline' }}>Sign In</a></>
+                )
+              }
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span className="navbar-cta-label">Post Want Listing</span>
+          </Link>
+
           {isAuthenticated ? (
             <>
               <NotificationBell />
@@ -97,29 +133,62 @@ export default function NavBar() {
           <Link to="/" className={`navbar-mobile-link${isActive('/') ? ' active' : ''}`}>
             Browse
           </Link>
+          <Link
+            to={isAuthenticated ? '/dashboard' : '#'}
+            className={`navbar-mobile-link${isActive('/dashboard') ? ' active' : ''}`}
+            onClick={(e) => {
+              if (!isAuthenticated) {
+                e.preventDefault()
+                toast.info(
+                  <>Sign in to access Dashboard. <a href="/auth?mode=login&redirect=/dashboard" style={{ color: '#fff', textDecoration: 'underline' }}>Sign In</a></>
+                )
+              }
+            }}
+          >
+            Dashboard
+          </Link>
+          <Link
+            to={isAuthenticated ? '/create-listing' : '#'}
+            className={`navbar-mobile-link${isActive('/create-listing') ? ' active' : ''}`}
+            onClick={(e) => {
+              if (!isAuthenticated) {
+                e.preventDefault()
+                toast.info(
+                  <>Sign in to post a want listing. <a href="/auth?mode=login&redirect=/create-listing" style={{ color: '#fff', textDecoration: 'underline' }}>Sign In</a></>
+                )
+              }
+            }}
+          >
+            Post Want Listing
+          </Link>
+          <Link
+            to={isAuthenticated ? '/add-vehicle' : '#'}
+            className={`navbar-mobile-link${isActive('/add-vehicle') ? ' active' : ''}`}
+            onClick={(e) => {
+              if (!isAuthenticated) {
+                e.preventDefault()
+                toast.info(
+                  <>Sign in to access Add Vehicle. <a href="/auth?mode=login&redirect=/add-vehicle" style={{ color: '#fff', textDecoration: 'underline' }}>Sign In</a></>
+                )
+              }
+            }}
+          >
+            Add Vehicle
+          </Link>
           {isAuthenticated && (
             <>
-              <Link to="/dashboard" className={`navbar-mobile-link${isActive('/dashboard') ? ' active' : ''}`}>
-                Dashboard
-              </Link>
-              <Link to="/create-listing" className={`navbar-mobile-link${isActive('/create-listing') ? ' active' : ''}`}>
-                Post Want Listing
-              </Link>
-              <Link to="/add-vehicle" className={`navbar-mobile-link${isActive('/add-vehicle') ? ' active' : ''}`}>
-                Add Vehicle
-              </Link>
               <Link to="/introductions" className={`navbar-mobile-link${isActive('/introductions') ? ' active' : ''}`}>
                 Introductions
               </Link>
               <Link to="/messages" className={`navbar-mobile-link${isActive('/messages') ? ' active' : ''}`}>
                 Messages
               </Link>
-              {isRole('admin') && (
-                <Link to="/admin" className={`navbar-mobile-link${isActive('/admin') ? ' active' : ''}`}>
-                  Admin
-                </Link>
-              )}
             </>
+          )}
+          {isAuthenticated && isRole('admin') && (
+            <Link to="/admin" className={`navbar-mobile-link${isActive('/admin') ? ' active' : ''}`}>
+              Admin
+            </Link>
           )}
           {!isAuthenticated && (
             <>

@@ -8,7 +8,7 @@ import apiService from '../services/apiService'
 import './FilterSidebar.css'
 
 const VEHICLE_TYPES = ['Sedan', 'SUV', 'Truck', 'Coupe', 'Convertible', 'Van', 'Wagon']
-const MAKES = [{ value: '', label: 'Any' }, ...getAllMakes()]
+const FALLBACK_MAKES = [{ value: '', label: 'Any' }, ...getAllMakes()]
 const MILEAGE_OPTIONS = [
   { value: '', label: 'No Max' },
   { value: '50000', label: '50,000 mi' },
@@ -25,11 +25,22 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
   const { isAuthenticated } = useAuth()
   const [actionMode, setActionMode] = useState(null) // null | 'find-buyer' | 'post-listing'
   const [aiAvailable, setAiAvailable] = useState(true)
+  const [makesList, setMakesList] = useState(FALLBACK_MAKES)
+  const [modelsList, setModelsList] = useState([])
 
   useEffect(() => {
     apiService.ai.status()
       .then(res => setAiAvailable(res.data.data.available))
       .catch(() => setAiAvailable(true)) // optimistic on network error
+    // Fetch makes from NHTSA-backed API
+    apiService.vehicles.makes()
+      .then(res => {
+        const data = res.data.data
+        if (Array.isArray(data) && data.length > 0) {
+          setMakesList([{ value: '', label: 'Any' }, ...data])
+        }
+      })
+      .catch(() => {}) // keep fallback
   }, [])
 
   const handleSelectAction = (action) => {
@@ -110,10 +121,29 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
     })
   }
 
-  // Compute models list when make is selected
-  const MODELS = filters.make
-    ? [{ value: '', label: 'Any' }, ...getModelsByMake(filters.make)]
-    : []
+  // Fetch models from API when make changes
+  useEffect(() => {
+    if (!filters.make) {
+      setModelsList([])
+      return
+    }
+    // Set fallback immediately
+    const fallback = getModelsByMake(filters.make)
+    if (fallback.length > 0) {
+      setModelsList([{ value: '', label: 'Any' }, ...fallback])
+    } else {
+      setModelsList([{ value: '', label: 'Any' }])
+    }
+    // Fetch from API
+    apiService.vehicles.models(filters.make)
+      .then(res => {
+        const data = res.data.data
+        if (Array.isArray(data) && data.length > 0) {
+          setModelsList([{ value: '', label: 'Any' }, ...data])
+        }
+      })
+      .catch(() => {}) // keep fallback
+  }, [filters.make])
 
   const chevron = (isOpen) => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -163,18 +193,18 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
               onChange={(e) => onFilterChange({ ...filters, make: e.target.value, model: '' })}
               className="filter-select"
             >
-              {MAKES.map((m) => (
+              {makesList.map((m) => (
                 <option key={m.value} value={m.value}>{m.label}</option>
               ))}
             </select>
-            {filters.make && (
+            {filters.make && modelsList.length > 0 && (
               <select
                 value={filters.model || ''}
                 onChange={(e) => update('model', e.target.value)}
                 className="filter-select"
                 style={{ marginTop: 'var(--space-2)' }}
               >
-                {MODELS.map((m) => (
+                {modelsList.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </select>

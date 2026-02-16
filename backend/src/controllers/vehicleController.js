@@ -1,6 +1,33 @@
 const vehicleModel = require('../models/vehicleModel');
 const { uploadImage } = require('../services/firebaseService');
 const { success, error } = require('../utils/response');
+const { getMakes, getModels } = require('car-info');
+
+// In-memory cache for NHTSA API responses
+const makesCache = { data: null, timestamp: 0 };
+const modelsCache = new Map();
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+// NHTSA returns ALL CAPS names — normalize to proper casing
+const MAKE_NAME_OVERRIDES = {
+  'MCLAREN': 'McLaren', 'MASERATI': 'Maserati', 'DELOREAN': 'DeLorean',
+  'MCLAREN AUTOMOTIVE': 'McLaren', 'MCLARENS': 'McLaren',
+};
+
+function normalizeName(name) {
+  const trimmed = name.trim();
+  const upper = trimmed.toUpperCase();
+  if (MAKE_NAME_OVERRIDES[upper]) return MAKE_NAME_OVERRIDES[upper];
+  // Already mixed case — leave it
+  if (trimmed !== upper && trimmed !== trimmed.toLowerCase()) return trimmed;
+  // Title case each word, keeping short words uppercase and words with digits as-is
+  return trimmed.split(/(\s+|-)/g).map(part => {
+    if (/^[\s-]+$/.test(part)) return part;
+    if (part.length <= 3) return part.toUpperCase();
+    if (/\d/.test(part)) return part; // Alphanumeric abbreviations (RAV4, 540C) — keep as-is
+    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+  }).join('');
+}
 
 function formatVehicle(row) {
   return {
@@ -20,6 +47,72 @@ function formatVehicle(row) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+async function getVehicleMakes(req, res, next) {
+  try {
+    // Check cache
+    if (makesCache.data && Date.now() - makesCache.timestamp < CACHE_TTL) {
+      return success(res, makesCache.data);
+    }
+
+    // Try NHTSA API
+    try {
+      const response = await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json', { signal: AbortSignal.timeout(5000) });
+      const json = await response.json();
+      const makes = json.Results
+        .filter(r => r.Make_Name && r.Make_Name.trim())
+        .map(r => {
+          const name = normalizeName(r.Make_Name);
+          return { value: name, label: name };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label));
+      makesCache.data = makes;
+      makesCache.timestamp = Date.now();
+      return success(res, makes);
+    } catch {
+      // Fallback to car-info
+      const makes = getMakes().map(name => ({ value: name, label: name })).sort((a, b) => a.label.localeCompare(b.label));
+      return success(res, makes);
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getVehicleModels(req, res, next) {
+  try {
+    const make = req.params.make;
+    const cacheKey = make.toLowerCase();
+
+    // Check cache
+    const cached = modelsCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return success(res, cached.data);
+    }
+
+    // Try NHTSA API
+    try {
+      const encoded = encodeURIComponent(make);
+      const response = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${encoded}?format=json`, { signal: AbortSignal.timeout(5000) });
+      const json = await response.json();
+      const models = json.Results
+        .filter(r => r.Model_Name && r.Model_Name.trim())
+        .map(r => {
+          const name = normalizeName(r.Model_Name);
+          return { value: name, label: name };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label));
+      modelsCache.set(cacheKey, { data: models, timestamp: Date.now() });
+      return success(res, models);
+    } catch {
+      // Fallback to car-info
+      const models = getModels(make).map(name => ({ value: name, label: name })).sort((a, b) => a.label.localeCompare(b.label));
+      return success(res, models);
+    }
+  } catch (err) {
+    next(err);
+  }
 }
 
 async function uploadVehicleImage(req, res, next) {
@@ -169,4 +262,4 @@ async function getMatches(req, res, next) {
   }
 }
 
-module.exports = { uploadVehicleImage, createVehicle, updateVehicle, myVehicles, getVehicle, getMatches };
+module.exports = { getVehicleMakes, getVehicleModels, uploadVehicleImage, createVehicle, updateVehicle, myVehicles, getVehicle, getMatches };

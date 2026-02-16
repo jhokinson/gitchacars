@@ -77,6 +77,8 @@ const apiService = {
     },
     getMatches: (vehicleId) =>
       useMocks ? mockApi.vehicles.getMatches(vehicleId) : api.get(`/vehicles/${vehicleId}/matches`),
+    makes: () => api.get('/vehicles/makes'),
+    models: (make) => api.get(`/vehicles/models/${encodeURIComponent(make)}`),
   },
   introductions: {
     create: (data) =>
