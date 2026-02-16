@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import apiService from '../services/apiService'
+import CustomSelect from '../components/CustomSelect'
 import { getMakes, getModels } from '../data/vehicleData'
 import './pages.css'
 
@@ -130,18 +131,25 @@ export default function EditVehiclePage() {
           <div className="form-row">
             <div className="form-group">
               <label>Make</label>
-              <select name="make" value={form.make} onChange={handleChange}>
-                <option value="">Select a make</option>
-                {makes.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
+              <CustomSelect
+                options={makes.map((m) => ({ value: m, label: m }))}
+                value={form.make}
+                onChange={(val) => setForm((prev) => ({ ...prev, make: val, model: '' }))}
+                placeholder="Select a make"
+                searchable
+              />
               {errors.make && <div className="form-error">{errors.make}</div>}
             </div>
             <div className="form-group">
               <label>Model</label>
-              <select name="model" value={form.model} onChange={handleChange} disabled={!form.make}>
-                <option value="">{form.make ? 'Select a model' : 'Select make first'}</option>
-                {models.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
+              <CustomSelect
+                options={models.map((m) => ({ value: m, label: m }))}
+                value={form.model}
+                onChange={(val) => setForm((prev) => ({ ...prev, model: val }))}
+                placeholder={form.make ? 'Select a model' : 'Select make first'}
+                disabled={!form.make}
+                searchable
+              />
               {errors.model && <div className="form-error">{errors.model}</div>}
             </div>
           </div>
@@ -176,19 +184,29 @@ export default function EditVehiclePage() {
           <div className="form-row">
             <div className="form-group">
               <label>Transmission</label>
-              <select name="transmission" value={form.transmission} onChange={handleChange}>
-                <option value="automatic">Automatic</option>
-                <option value="manual">Manual</option>
-              </select>
+              <CustomSelect
+                options={[
+                  { value: 'automatic', label: 'Automatic' },
+                  { value: 'manual', label: 'Manual' },
+                ]}
+                value={form.transmission}
+                onChange={(val) => setForm((prev) => ({ ...prev, transmission: val }))}
+                placeholder="Transmission"
+              />
             </div>
             <div className="form-group">
               <label>Drivetrain</label>
-              <select name="drivetrain" value={form.drivetrain} onChange={handleChange}>
-                <option value="fwd">FWD</option>
-                <option value="rwd">RWD</option>
-                <option value="awd">AWD</option>
-                <option value="4wd">4WD</option>
-              </select>
+              <CustomSelect
+                options={[
+                  { value: 'fwd', label: 'FWD' },
+                  { value: 'rwd', label: 'RWD' },
+                  { value: 'awd', label: 'AWD' },
+                  { value: '4wd', label: '4WD' },
+                ]}
+                value={form.drivetrain}
+                onChange={(val) => setForm((prev) => ({ ...prev, drivetrain: val }))}
+                placeholder="Drivetrain"
+              />
             </div>
           </div>
           <div className="form-group">

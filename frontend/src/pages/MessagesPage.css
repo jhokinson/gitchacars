@@ -25,12 +25,14 @@
   margin-bottom: var(--space-2);
   text-decoration: none;
   color: var(--color-text);
-  transition: box-shadow 0.15s, background-color 0.15s;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.15s;
 }
 
 .conversation-row:hover {
   background: var(--color-bg-hover);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .conversation-thumb {

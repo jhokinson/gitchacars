@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import RangeSlider from './RangeSlider'
+import CustomSelect from './CustomSelect'
 import SmartActionBox from './SmartActionBox'
 import SidebarChat from './SidebarChat'
 import { getAllMakes, getModelsByMake } from '../data/carMakesModels'
@@ -20,6 +21,15 @@ const MILEAGE_OPTIONS = [
 
 const currentYear = new Date().getFullYear()
 const YEARS = Array.from({ length: 30 }, (_, i) => currentYear + 1 - i)
+const YEAR_OPTIONS = [{ value: '', label: 'Any' }, ...YEARS.map((y) => ({ value: String(y), label: String(y) }))]
+const RADIUS_OPTIONS = [
+  { value: '', label: 'Nationwide' },
+  { value: '25', label: '25 miles' },
+  { value: '50', label: '50 miles' },
+  { value: '100', label: '100 miles' },
+  { value: '250', label: '250 miles' },
+  { value: '500', label: '500 miles' },
+]
 
 export default function FilterSidebar({ filters, onFilterChange, onClose }) {
   const { isAuthenticated } = useAuth()
@@ -104,6 +114,32 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
     onFilterChange({ ...filters, [key]: value })
   }
 
+  // Compute active filter counts per section
+  const sectionCounts = {
+    make: (filters.make ? 1 : 0) + (filters.model ? 1 : 0),
+    price: (filters.budgetMin > 0 || filters.budgetMax < 200000) ? 1 : 0,
+    year: (filters.yearMin ? 1 : 0) + (filters.yearMax ? 1 : 0),
+    mileage: filters.mileageMax ? 1 : 0,
+    location: (filters.zipCode ? 1 : 0) + (filters.radius ? 1 : 0),
+    type: (filters.vehicleTypes || []).length,
+    transmission: filters.transmission ? 1 : 0,
+    drivetrain: filters.drivetrain ? 1 : 0,
+  }
+
+  const clearSection = (section) => {
+    const clears = {
+      make: { make: '', model: '' },
+      price: { budgetMin: 0, budgetMax: 200000 },
+      year: { yearMin: '', yearMax: '' },
+      mileage: { mileageMax: '' },
+      location: { zipCode: '', radius: '' },
+      type: { vehicleTypes: [] },
+      transmission: { transmission: '' },
+      drivetrain: { drivetrain: '' },
+    }
+    onFilterChange({ ...filters, ...clears[section] })
+  }
+
   const handleClearAll = () => {
     onFilterChange({
       zipCode: '',
@@ -151,6 +187,26 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
     </svg>
   )
 
+  const sectionHeader = (key, label) => {
+    const count = sectionCounts[key] || 0
+    return (
+      <div className={`filter-section-header${count > 0 ? ' has-active' : ''}`}>
+        <button className={`filter-section-toggle${sections[key] ? ' open' : ''}`} onClick={() => toggleSection(key)}>
+          <span className="filter-section-label">
+            {label}
+            {count > 0 && <span className="filter-count-badge">{count}</span>}
+          </span>
+          {chevron(sections[key])}
+        </button>
+        {count > 0 && (
+          <button className="filter-section-clear" onClick={(e) => { e.stopPropagation(); clearSection(key) }}>
+            Clear
+          </button>
+        )}
+      </div>
+    )
+  }
+
   return (
     <aside className="filter-sidebar">
       <div className="filter-sidebar-header">
@@ -182,32 +238,26 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
 
       {/* Make / Model */}
       <div className="filter-section">
-        <button className={`filter-section-toggle${sections.make ? ' open' : ''}`} onClick={() => toggleSection('make')}>
-          <span>Make / Model</span>
-          {chevron(sections.make)}
-        </button>
+        {sectionHeader('make', 'Make / Model')}
         {sections.make && (
           <div className="filter-section-body">
-            <select
+            <CustomSelect
+              options={makesList}
               value={filters.make || ''}
-              onChange={(e) => onFilterChange({ ...filters, make: e.target.value, model: '' })}
-              className="filter-select"
-            >
-              {makesList.map((m) => (
-                <option key={m.value} value={m.value}>{m.label}</option>
-              ))}
-            </select>
+              onChange={(val) => onFilterChange({ ...filters, make: val, model: '' })}
+              placeholder="Any Make"
+              searchable
+            />
             {filters.make && modelsList.length > 0 && (
-              <select
-                value={filters.model || ''}
-                onChange={(e) => update('model', e.target.value)}
-                className="filter-select"
-                style={{ marginTop: 'var(--space-2)' }}
-              >
-                {modelsList.map((m) => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
-                ))}
-              </select>
+              <div style={{ marginTop: '8px' }}>
+                <CustomSelect
+                  options={modelsList}
+                  value={filters.model || ''}
+                  onChange={(val) => update('model', val)}
+                  placeholder="Any Model"
+                  searchable
+                />
+              </div>
             )}
           </div>
         )}
@@ -215,10 +265,7 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
 
       {/* Price Range */}
       <div className="filter-section">
-        <button className={`filter-section-toggle${sections.price ? ' open' : ''}`} onClick={() => toggleSection('price')}>
-          <span>Price Range</span>
-          {chevron(sections.price)}
-        </button>
+        {sectionHeader('price', 'Price Range')}
         {sections.price && (
           <div className="filter-section-body">
             <RangeSlider
@@ -235,29 +282,22 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
 
       {/* Year Range */}
       <div className="filter-section">
-        <button className={`filter-section-toggle${sections.year ? ' open' : ''}`} onClick={() => toggleSection('year')}>
-          <span>Year Range</span>
-          {chevron(sections.year)}
-        </button>
+        {sectionHeader('year', 'Year Range')}
         {sections.year && (
           <div className="filter-section-body">
             <div className="filter-row">
-              <select
+              <CustomSelect
+                options={YEAR_OPTIONS}
                 value={filters.yearMin || ''}
-                onChange={(e) => update('yearMin', e.target.value)}
-                className="filter-select"
-              >
-                <option value="">Min Year</option>
-                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-              </select>
-              <select
+                onChange={(val) => update('yearMin', val)}
+                placeholder="Min Year"
+              />
+              <CustomSelect
+                options={YEAR_OPTIONS}
                 value={filters.yearMax || ''}
-                onChange={(e) => update('yearMax', e.target.value)}
-                className="filter-select"
-              >
-                <option value="">Max Year</option>
-                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-              </select>
+                onChange={(val) => update('yearMax', val)}
+                placeholder="Max Year"
+              />
             </div>
           </div>
         )}
@@ -265,31 +305,22 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
 
       {/* Max Mileage */}
       <div className="filter-section">
-        <button className={`filter-section-toggle${sections.mileage ? ' open' : ''}`} onClick={() => toggleSection('mileage')}>
-          <span>Max Mileage</span>
-          {chevron(sections.mileage)}
-        </button>
+        {sectionHeader('mileage', 'Max Mileage')}
         {sections.mileage && (
           <div className="filter-section-body">
-            <select
+            <CustomSelect
+              options={MILEAGE_OPTIONS}
               value={filters.mileageMax || ''}
-              onChange={(e) => update('mileageMax', e.target.value)}
-              className="filter-select"
-            >
-              {MILEAGE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+              onChange={(val) => update('mileageMax', val)}
+              placeholder="No Max"
+            />
           </div>
         )}
       </div>
 
       {/* Location */}
       <div className="filter-section">
-        <button className={`filter-section-toggle${sections.location ? ' open' : ''}`} onClick={() => toggleSection('location')}>
-          <span>Location</span>
-          {chevron(sections.location)}
-        </button>
+        {sectionHeader('location', 'Location')}
         {sections.location && (
           <div className="filter-section-body">
             <div className="filter-input-icon">
@@ -302,28 +333,19 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
                 maxLength={5}
               />
             </div>
-            <select
+            <CustomSelect
+              options={RADIUS_OPTIONS}
               value={filters.radius || ''}
-              onChange={(e) => update('radius', e.target.value)}
-              className="filter-select"
-            >
-              <option value="">Nationwide</option>
-              <option value="25">25 miles</option>
-              <option value="50">50 miles</option>
-              <option value="100">100 miles</option>
-              <option value="250">250 miles</option>
-              <option value="500">500 miles</option>
-            </select>
+              onChange={(val) => update('radius', val)}
+              placeholder="Nationwide"
+            />
           </div>
         )}
       </div>
 
       {/* Vehicle Type */}
       <div className="filter-section">
-        <button className={`filter-section-toggle${sections.type ? ' open' : ''}`} onClick={() => toggleSection('type')}>
-          <span>Vehicle Type</span>
-          {chevron(sections.type)}
-        </button>
+        {sectionHeader('type', 'Vehicle Type')}
         {sections.type && (
           <div className="filter-section-body">
             {VEHICLE_TYPES.map((type) => (
@@ -348,10 +370,7 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
 
       {/* Transmission */}
       <div className="filter-section">
-        <button className={`filter-section-toggle${sections.transmission ? ' open' : ''}`} onClick={() => toggleSection('transmission')}>
-          <span>Transmission</span>
-          {chevron(sections.transmission)}
-        </button>
+        {sectionHeader('transmission', 'Transmission')}
         {sections.transmission && (
           <div className="filter-section-body">
             {['', 'automatic', 'manual'].map((val) => (
@@ -371,10 +390,7 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
 
       {/* Drivetrain */}
       <div className="filter-section">
-        <button className={`filter-section-toggle${sections.drivetrain ? ' open' : ''}`} onClick={() => toggleSection('drivetrain')}>
-          <span>Drivetrain</span>
-          {chevron(sections.drivetrain)}
-        </button>
+        {sectionHeader('drivetrain', 'Drivetrain')}
         {sections.drivetrain && (
           <div className="filter-section-body">
             {['', 'fwd', 'rwd', 'awd', '4wd'].map((val) => (

@@ -72,13 +72,14 @@ test.describe('Homepage & Feed', () => {
 
   test('unauthenticated view shows Sign In / Up', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('text=Sign In / Up')).toBeVisible()
+    await expect(page.locator('.navbar-auth-buttons >> text=Sign In')).toBeVisible()
+    await expect(page.locator('.navbar-auth-buttons >> text=Sign Up')).toBeVisible()
   })
 
   test('authenticated view shows CTA and avatar', async ({ page }) => {
     await loginAsBuyer(page)
     await page.goto('/')
-    await expect(page.locator('.nav-cta, a:has-text("Post Want-Listing")')).toBeVisible()
+    await expect(page.locator('.navbar-cta')).toBeVisible()
     await expect(page.locator('.avatar-dropdown')).toBeVisible()
   })
 })

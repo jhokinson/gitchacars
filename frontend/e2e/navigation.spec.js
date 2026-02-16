@@ -4,24 +4,26 @@ import { loginAsBuyer, loginAsSeller, loginAsAdmin } from './helpers.js'
 test.describe('Navigation & Routing', () => {
   test('nav links — unauthenticated', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('text=Sign In / Up')).toBeVisible()
-    await expect(page.locator('text=Sign In / Up')).toBeVisible()
+    await expect(page.locator('.navbar-auth-buttons >> text=Sign In')).toBeVisible()
+    await expect(page.locator('.navbar-auth-buttons >> text=Sign Up')).toBeVisible()
+    // CTA is visible even when logged out
+    await expect(page.locator('.navbar-cta')).toBeVisible()
   })
 
   test('nav links — buyer', async ({ page }) => {
     await loginAsBuyer(page)
     await page.goto('/')
     await expect(page.locator('.avatar-dropdown')).toBeVisible()
-    // CTA should say Post Want-Listing
-    await expect(page.locator('.nav-cta, a:has-text("Post Want-Listing")')).toBeVisible()
+    // CTA should say Post Want Listing
+    await expect(page.locator('.navbar-cta')).toBeVisible()
   })
 
   test('nav links — seller', async ({ page }) => {
     await loginAsSeller(page)
     await page.goto('/')
     await expect(page.locator('.avatar-dropdown')).toBeVisible()
-    // CTA should say + Private Inventory
-    await expect(page.locator('.nav-cta, a:has-text("Private Inventory")')).toBeVisible()
+    // CTA is same for all roles: Post Want Listing
+    await expect(page.locator('.navbar-cta')).toBeVisible()
   })
 
   test('nav links — admin', async ({ page }) => {
@@ -34,9 +36,9 @@ test.describe('Navigation & Routing', () => {
     await loginAsBuyer(page)
     await page.goto('/')
     await page.click('.avatar-dropdown')
-    await expect(page.locator('.dropdown-menu, .avatar-menu')).toBeVisible()
-    await expect(page.locator('text=Dashboard')).toBeVisible()
-    await expect(page.locator('text=Logout')).toBeVisible()
+    await expect(page.locator('.avatar-menu')).toBeVisible()
+    await expect(page.locator('.avatar-menu >> text=Dashboard')).toBeVisible()
+    await expect(page.locator('.avatar-menu >> text=Logout')).toBeVisible()
   })
 
   test('deep linking — protected page after login', async ({ page }) => {

@@ -5,7 +5,7 @@ import FeatureTagPicker from '../components/FeatureTagPicker'
 import AIChatBox from '../components/AIChatBox'
 import ListingPreview from '../components/ListingPreview'
 import VehicleTypeIcon from '../components/VehicleTypeIcon'
-import SearchableSelect from '../components/SearchableSelect'
+import CustomSelect from '../components/CustomSelect'
 import SuccessToast from '../components/SuccessToast'
 import { getAllMakes, getModelsByMake } from '../data/carMakesModels'
 import { getModelInfo } from '../data/vehicleData'
@@ -89,7 +89,7 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [openSections, setOpenSections] = useState({ vehicle: true, specs: false, budget: false, details: false })
+  const [openSections, setOpenSections] = useState({ vehicle: true, specs: true, budget: true, details: true })
   const [titleEdited, setTitleEdited] = useState(false)
 
   const isOtherMake = form.make === '__other__'
@@ -247,11 +247,12 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
         <div className="form-row">
           <div className="form-group">
             <label>Make</label>
-            <SearchableSelect
+            <CustomSelect
               options={makeOptions}
               value={form.make}
               onChange={handleMakeChange}
               placeholder="Select a make..."
+              searchable
             />
             {isOtherMake && (
               <input name="makeOther" value={form.makeOther} onChange={handleChange} placeholder="Enter make" style={{ marginTop: 8 }} />
@@ -260,12 +261,13 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
           </div>
           <div className="form-group">
             <label>Model</label>
-            <SearchableSelect
+            <CustomSelect
               options={modelOptions}
               value={form.model}
               onChange={(val) => setForm((prev) => ({ ...prev, model: val, modelOther: '' }))}
               placeholder={form.make ? 'Select a model...' : 'Select make first'}
               disabled={!form.make}
+              searchable
             />
             {isOtherModel && (
               <input name="modelOther" value={form.modelOther} onChange={handleChange} placeholder="Enter model" style={{ marginTop: 8 }} />
@@ -280,7 +282,7 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
         summary={s2Summary}
         complete={!!s2Complete}
         open={openSections.specs}
-        onToggle={() => s1Complete && toggleSection('specs')}
+        onToggle={() => toggleSection('specs')}
       >
         <div className="form-row">
           <div className="form-group">
@@ -302,29 +304,44 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
         <div className="form-row">
           <div className="form-group">
             <label>Transmission</label>
-            <select name="transmission" value={form.transmission} onChange={handleChange}>
-              <option>Any</option>
-              <option value="automatic">Automatic</option>
-              <option value="manual">Manual</option>
-            </select>
+            <CustomSelect
+              options={[
+                { value: 'Any', label: 'Any' },
+                { value: 'automatic', label: 'Automatic' },
+                { value: 'manual', label: 'Manual' },
+              ]}
+              value={form.transmission}
+              onChange={(val) => setForm((prev) => ({ ...prev, transmission: val }))}
+              placeholder="Any"
+            />
           </div>
           <div className="form-group">
             <label>Drivetrain</label>
-            <select name="drivetrain" value={form.drivetrain} onChange={handleChange}>
-              <option>Any</option>
-              <option value="fwd">FWD</option>
-              <option value="rwd">RWD</option>
-              <option value="awd">AWD</option>
-              <option value="4wd">4WD</option>
-            </select>
+            <CustomSelect
+              options={[
+                { value: 'Any', label: 'Any' },
+                { value: 'fwd', label: 'FWD' },
+                { value: 'rwd', label: 'RWD' },
+                { value: 'awd', label: 'AWD' },
+                { value: '4wd', label: '4WD' },
+              ]}
+              value={form.drivetrain}
+              onChange={(val) => setForm((prev) => ({ ...prev, drivetrain: val }))}
+              placeholder="Any"
+            />
           </div>
           <div className="form-group">
             <label>Condition</label>
-            <select name="condition" value={form.condition} onChange={handleChange}>
-              <option>Any</option>
-              <option value="new">New</option>
-              <option value="used">Used</option>
-            </select>
+            <CustomSelect
+              options={[
+                { value: 'Any', label: 'Any' },
+                { value: 'new', label: 'New' },
+                { value: 'used', label: 'Used' },
+              ]}
+              value={form.condition}
+              onChange={(val) => setForm((prev) => ({ ...prev, condition: val }))}
+              placeholder="Any"
+            />
           </div>
         </div>
       </AccordionSection>
@@ -334,7 +351,7 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
         summary={s3Summary}
         complete={!!s3Complete}
         open={openSections.budget}
-        onToggle={() => s2Complete && toggleSection('budget')}
+        onToggle={() => toggleSection('budget')}
       >
         <div className="form-row">
           <div className="form-group">
@@ -367,7 +384,7 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
         summary={form.title ? form.title : ''}
         complete={!!form.title && !!form.description}
         open={openSections.details}
-        onToggle={() => s3Complete && toggleSection('details')}
+        onToggle={() => toggleSection('details')}
       >
         <div className="form-group">
           <label>Listing Title</label>

@@ -82,6 +82,19 @@
   color: var(--color-text);
 }
 
+/* Danger */
+.btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+  border-color: var(--color-danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+
 /* Ghost danger */
 .btn-ghost-danger {
   background: transparent;

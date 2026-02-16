@@ -40,8 +40,8 @@ backend/
 frontend/
   src/
     App.jsx             ← Router + DemoGate + AuthProvider + ToastProvider
-    components/         ← 64 components (NavBar, ListingCard, FilterSidebar, AIChatBox, DemoGate, etc.)
-    pages/              ← 21 pages (HomePage, AuthPage, DashboardPage, CreateListingPage, etc.)
+    components/         ← ~33 components (NavBar, ListingCard, FilterSidebar, AIChatBox, DemoGate, etc.)
+    pages/              ← 17 pages (HomePage, AuthPage, DashboardPage, CreateListingPage, etc.)
     services/
       apiService.js     ← Centralized API client
       firebaseService.js ← Lazy-loaded Firebase
@@ -128,7 +128,12 @@ When told to "build", given a PRD, or told to "run Ralph":
 | `prd-gitchacars-deploy.md` | Done | Deployment to Render |
 | `prd-gitchacars-ai-listing.md` | Done | AI chat listing creation |
 | `prd-gitchacars-auth-ui.md` | Done | Auth page redesign |
-| `prd-gitchacars-bugfix-phase5.md` | Review | Bug fixes |
+| `prd-gitchacars-bugfix-phase5.md` | Done | Bug fixes |
+| `prd-gitchacars-ux-phase6.md` | Done | Filters, model dropdown, chat sizing |
+| `prd-gitchacars-ux-phase7.md` | Done | Nav CTA, NHTSA data, seed data |
+| `prd-gitchacars-ui-customselect.md` | Ready | CustomSelect component + FilterSidebar |
+| `prd-gitchacars-ui-forms.md` | Ready | Form pages fix + select migration |
+| `prd-gitchacars-ui-polish.md` | Ready | Shadows, buttons, visual depth |
 
 ## Lessons Learned (saves debugging time)
 1. **Vite + Render**: `NODE_ENV=production` skips devDependencies. Build command must use `npm install --include=dev` for frontend or Vite won't be found.

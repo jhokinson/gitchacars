@@ -9,6 +9,7 @@ import VehicleTypeIcon from '../components/VehicleTypeIcon'
 import AuroraBackground from '../components/AuroraBackground'
 import ShimmerButton from '../components/ShimmerButton'
 import ErrorBoundary from '../components/ErrorBoundary'
+import CustomSelect from '../components/CustomSelect'
 import './pages.css'
 
 const vehicleTypeLabels = {
@@ -243,19 +244,16 @@ export default function WantListingDetailPage() {
                     ) : (
                       <div className="intro-vehicle-selector">
                         <label>Select your vehicle</label>
-                        <select
+                        <CustomSelect
+                          options={vehicles.map((v) => ({
+                            value: String(v.id),
+                            label: `${v.year} ${v.make} ${v.model}`,
+                          }))}
                           value={selectedVehicle}
-                          onChange={(e) => { setSelectedVehicle(e.target.value); if (e.target.value) setVehicleSelectorOpen(false) }}
-                          className="filter-select"
-                          autoFocus
-                        >
-                          <option value="">Choose a vehicle...</option>
-                          {vehicles.map((v) => (
-                            <option key={v.id} value={v.id}>
-                              {v.year} {v.make} {v.model}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => { setSelectedVehicle(val); if (val) setVehicleSelectorOpen(false) }}
+                          placeholder="Choose a vehicle..."
+                          searchable={vehicles.length > 5}
+                        />
                       </div>
                     )}
                   </div>

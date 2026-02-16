@@ -3,11 +3,13 @@
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   padding: var(--space-4);
-  transition: box-shadow 0.15s;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .intro-card:hover {
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .intro-card-body {
