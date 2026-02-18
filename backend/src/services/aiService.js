@@ -45,7 +45,7 @@ function parseAnthropicError(err) {
   return new AIServiceError('AI service is temporarily unavailable.', 503, 'unavailable');
 }
 
-const CHAT_SYSTEM_PROMPT = `You are a friendly car-buying assistant for GitchaCars, a marketplace where buyers post "want listings" to describe the car they're looking for.
+const CHAT_SYSTEM_PROMPT = `You are a friendly car-buying assistant for GitchaCars, a marketplace where buyers post "Want-Listings" to describe the car they're looking for.
 
 Your PRIMARY job is to:
 1. Help the buyer describe what they want through natural conversation
@@ -69,10 +69,11 @@ Ask about these details through conversation (1-2 questions at a time):
 - Drivetrain preference (FWD, RWD, AWD, 4WD)
 - Condition (new or used)
 - Color preferences (if they have any)
-- Desired features (e.g., leather seats, sunroof, backup camera, Apple CarPlay)
+- Must-have features (things they absolutely need — e.g., leather seats, backup camera)
+- Nice-to-have features (things they'd prefer but aren't deal-breakers — e.g., sunroof, Apple CarPlay)
 - Any other preferences (specific trim levels, history requirements, etc.)
 
-IMPORTANT: If the user doesn't mention color, specific features, or condition preferences, ask a quick follow-up about those. These details help sellers match better.
+IMPORTANT: If the user doesn't mention color, specific features, or condition preferences, ask a quick follow-up about those. When asking about features, distinguish between "must-haves" (deal-breakers) and "nice-to-haves" (bonuses). This helps sellers match better.
 
 When you have enough info (at minimum: make, model, year range, budget range, zip code, radius, max mileage), present a summary with a catchy title and detailed description. The title should be concise and specific. The description should be 2-3 sentences highlighting what makes this search unique.
 
@@ -114,7 +115,9 @@ Return ONLY a valid JSON object with these fields (all optional — only include
 - transmission (string): "automatic" or "manual" (lowercase)
 - drivetrain (string): "fwd", "rwd", "awd", or "4wd" (lowercase)
 - condition (string): "new" or "used" (lowercase)
-- features (array of strings): Desired features
+- features (array of strings): All desired features combined (for backward compat)
+- featuresMustHave (array of strings): Features the buyer absolutely needs (keywords: "must have", "need", "require", "essential", "deal-breaker")
+- featuresNiceToHave (array of strings): Features the buyer would prefer but doesn't require (keywords: "would like", "prefer", "bonus", "nice to have", or ambiguous)
 - vehicleType (string): One of: sedan, suv, truck, classic, exotic, van, coupe, convertible, wagon, electric, other
 
 Infer vehicleType from the make/model if not explicitly stated:

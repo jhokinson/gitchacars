@@ -9,17 +9,27 @@ export default function SidebarChat({ mode, onFiltersExtracted, onClose }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef(null)
+  const textareaRef = useRef(null)
 
   useEffect(() => {
     const greeting = mode === 'find-buyer'
       ? 'Describe the vehicle you want to sell and I\'ll help you find matching buyers.'
-      : 'Tell me about the car you\'re looking for and I\'ll help you create a want listing.'
+      : 'Tell me about the car you\'re looking for and I\'ll help you create a Want-Listing.'
     setMessages([{ role: 'assistant', content: greeting }])
   }, [mode])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = messagesEndRef.current
+    if (el) el.parentElement.scrollTop = el.parentElement.scrollHeight
   }, [messages, loading])
+
+  // Auto-resize textarea as user types
+  useEffect(() => {
+    const ta = textareaRef.current
+    if (!ta) return
+    ta.style.height = 'auto'
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'
+  }, [input])
 
   const handleSend = async () => {
     if (!input.trim() || loading) return
@@ -97,7 +107,8 @@ export default function SidebarChat({ mode, onFiltersExtracted, onClose }) {
 
       <div className="sidebar-chat-input">
         <textarea
-          rows={2}
+          ref={textareaRef}
+          rows={1}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}

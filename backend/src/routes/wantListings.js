@@ -6,6 +6,7 @@ const router = Router();
 
 router.get('/', optionalAuth, wantListingController.listListings);
 router.get('/mine', authenticate, wantListingController.myListings);
+router.get('/price-distribution', wantListingController.priceDistribution);
 router.get('/:id', optionalAuth, wantListingController.getListing);
 router.post('/', authenticate, wantListingController.createListing);
 router.put('/:id', authenticate, wantListingController.updateListing);

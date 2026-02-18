@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import PriceHistogram from './PriceHistogram'
 import './RangeSlider.css'
 
-export default function RangeSlider({ min = 0, max = 100000, step = 1000, valueMin, valueMax, onChange, formatValue }) {
+export default function RangeSlider({ min = 0, max = 100000, step = 1000, valueMin, valueMax, onChange, formatValue, histogram }) {
   const trackRef = useRef(null)
   const [dragging, setDragging] = useState(null)
 
@@ -27,7 +28,8 @@ export default function RangeSlider({ min = 0, max = 100000, step = 1000, valueM
     if (!dragging) return
 
     const handleMouseMove = (e) => {
-      const val = getValueFromPosition(e.clientX)
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX
+      const val = getValueFromPosition(clientX)
       if (dragging === 'min') {
         onChange(Math.min(val, valueMax - step), valueMax)
       } else {
@@ -39,9 +41,13 @@ export default function RangeSlider({ min = 0, max = 100000, step = 1000, valueM
 
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('mouseup', handleMouseUp)
+    window.addEventListener('touchmove', handleMouseMove)
+    window.addEventListener('touchend', handleMouseUp)
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('touchmove', handleMouseMove)
+      window.removeEventListener('touchend', handleMouseUp)
     }
   }, [dragging, valueMin, valueMax, getValueFromPosition, onChange, step])
 
@@ -62,6 +68,15 @@ export default function RangeSlider({ min = 0, max = 100000, step = 1000, valueM
 
   return (
     <div className="range-slider">
+      {histogram && histogram.length > 0 && (
+        <PriceHistogram
+          buckets={histogram}
+          min={min}
+          max={max}
+          valueMin={valueMin}
+          valueMax={valueMax}
+        />
+      )}
       <div className="range-slider-track" ref={trackRef}>
         <div className="range-slider-rail" />
         <div
@@ -75,32 +90,41 @@ export default function RangeSlider({ min = 0, max = 100000, step = 1000, valueM
           className="range-slider-thumb"
           style={{ left: `${getPercent(valueMin)}%` }}
           onMouseDown={handleMouseDown('min')}
+          onTouchStart={handleMouseDown('min')}
         />
         <div
           className="range-slider-thumb"
           style={{ left: `${getPercent(valueMax)}%` }}
           onMouseDown={handleMouseDown('max')}
+          onTouchStart={handleMouseDown('max')}
         />
       </div>
-      <div className="range-slider-inputs">
-        <div className="range-slider-input-group">
-          <span className="range-slider-prefix">$</span>
-          <input
-            type="text"
-            value={valueMin.toLocaleString()}
-            onChange={handleMinInput}
-            className="range-slider-input"
-          />
+      <div className="range-slider-stacked-inputs">
+        <div className="range-slider-input-row">
+          <label className="range-slider-label">Min</label>
+          <div className="range-slider-input-group">
+            <span className="range-slider-prefix">$</span>
+            <input
+              type="text"
+              value={valueMin === 0 ? '' : valueMin.toLocaleString()}
+              onChange={handleMinInput}
+              className="range-slider-input"
+              placeholder="No min"
+            />
+          </div>
         </div>
-        <span className="range-slider-separator">&mdash;</span>
-        <div className="range-slider-input-group">
-          <span className="range-slider-prefix">$</span>
-          <input
-            type="text"
-            value={valueMax >= max ? 'No max' : valueMax.toLocaleString()}
-            onChange={handleMaxInput}
-            className="range-slider-input"
-          />
+        <div className="range-slider-input-row">
+          <label className="range-slider-label">Max</label>
+          <div className="range-slider-input-group">
+            <span className="range-slider-prefix">$</span>
+            <input
+              type="text"
+              value={valueMax >= max ? '' : valueMax.toLocaleString()}
+              onChange={handleMaxInput}
+              className="range-slider-input"
+              placeholder="No max"
+            />
+          </div>
         </div>
       </div>
     </div>

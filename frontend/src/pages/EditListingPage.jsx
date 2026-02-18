@@ -30,6 +30,8 @@ export default function EditListingPage() {
           drivetrain: l.drivetrain || 'Any',
           condition: l.condition || 'Any',
           features: l.features || [],
+          featuresMustHave: l.featuresMustHave || [],
+          featuresNiceToHave: l.featuresNiceToHave || (l.features || []),
           vehicleType: l.vehicleType || null,
         })
       })
@@ -46,7 +48,7 @@ export default function EditListingPage() {
 
   return (
     <div className="create-listing-page">
-      <h1>Edit Want Listing</h1>
+      <h1>Edit Want-Listing</h1>
       <ListingForm initial={initial} onSubmit={handleUpdate} submitLabel="Save Changes" />
     </div>
   )

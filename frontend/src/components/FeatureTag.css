@@ -10,3 +10,16 @@
   color: var(--color-tag-text);
   font-weight: 500;
 }
+
+.feature-tag-must-have {
+  background: rgba(5, 150, 105, 0.1);
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.3);
+  font-weight: 600;
+}
+
+.feature-tag-nice-to-have {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--color-accent);
+  border-color: rgba(37, 99, 235, 0.2);
+}

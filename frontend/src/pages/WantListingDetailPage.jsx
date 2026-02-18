@@ -191,14 +191,46 @@ export default function WantListingDetailPage() {
             </div>
           </div>
 
-          {listing.features && listing.features.length > 0 && (
-            <div className="card" style={{ marginTop: 'var(--space-4)' }}>
-              <h3 className="detail-section-title">Desired Features</h3>
-              <div className="detail-features">
-                {listing.features.map((f) => <FeatureTag key={f} label={f} />)}
+          {(() => {
+            const mustHave = listing.featuresMustHave || []
+            const niceToHave = listing.featuresNiceToHave || []
+            const hasPriorities = mustHave.length > 0 || niceToHave.length > 0
+            const flatFeatures = listing.features || []
+
+            if (!hasPriorities && flatFeatures.length === 0) return null
+
+            if (hasPriorities) {
+              return (
+                <>
+                  {mustHave.length > 0 && (
+                    <div className="card" style={{ marginTop: 'var(--space-4)' }}>
+                      <h3 className="detail-section-title">Must-Haves</h3>
+                      <div className="detail-features">
+                        {mustHave.map((f) => <FeatureTag key={f} label={f} priority="must-have" />)}
+                      </div>
+                    </div>
+                  )}
+                  {niceToHave.length > 0 && (
+                    <div className="card" style={{ marginTop: 'var(--space-4)' }}>
+                      <h3 className="detail-section-title">Nice-to-Haves</h3>
+                      <div className="detail-features">
+                        {niceToHave.map((f) => <FeatureTag key={f} label={f} priority="nice-to-have" />)}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )
+            }
+
+            return (
+              <div className="card" style={{ marginTop: 'var(--space-4)' }}>
+                <h3 className="detail-section-title">Desired Features</h3>
+                <div className="detail-features">
+                  {flatFeatures.map((f) => <FeatureTag key={f} label={f} />)}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
         </div>
 
         <div className="detail-col-right">

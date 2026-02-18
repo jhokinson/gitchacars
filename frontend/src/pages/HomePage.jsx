@@ -172,7 +172,7 @@ export default function HomePage() {
             </button>
             <h3 className="home-guidance-title">How GitchaCars Works</h3>
             <p className="home-guidance-body">
-              Buyers post what they want, and sellers introduce matching vehicles. Browse active want listings below, or{' '}
+              Buyers post what they want, and sellers introduce matching vehicles. Browse active Want-Listings below, or{' '}
               <Link to="/auth?mode=register" className="home-guidance-link">create an account</Link>{' '}
               to post your own or start selling.
             </p>
@@ -187,6 +187,7 @@ export default function HomePage() {
             <h3 className="home-guidance-title">Post Your First Want Listing</h3>
             <p className="home-guidance-body">
               Tell sellers what you're looking for! Use the AI chat in the sidebar or{' '}
+
               <Link to="/create-listing" className="home-guidance-link">create a listing manually</Link>.
             </p>
           </div>
@@ -199,7 +200,7 @@ export default function HomePage() {
             </button>
             <h3 className="home-guidance-title">Find Matching Buyers</h3>
             <p className="home-guidance-body">
-              Browse want listings below to find buyers looking for vehicles you have. Use the filters and AI chat in the sidebar to narrow results.
+              Browse Want-Listings below to find buyers looking for vehicles you have. Use the filters and AI chat in the sidebar to narrow results.
             </p>
           </div>
         )}

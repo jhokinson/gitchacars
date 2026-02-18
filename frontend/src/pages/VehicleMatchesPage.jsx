@@ -66,11 +66,11 @@ export default function VehicleMatchesPage() {
       )}
 
       <h1 style={{ fontSize: 'var(--font-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary)', marginBottom: 'var(--space-4)' }}>
-        Matching Want Listings
+        Matching Want-Listings
       </h1>
 
       {matches.length === 0 ? (
-        <div className="dashboard-empty">No matching buyers found for this vehicle yet. Check back as new want listings are posted.</div>
+        <div className="dashboard-empty">No matching buyers found for this vehicle yet. Check back as new Want-Listings are posted.</div>
       ) : (
         <div className="matches-list">
           {matches.map((listing) => (

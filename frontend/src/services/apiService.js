@@ -55,6 +55,7 @@ const apiService = {
       useMocks ? mockApi.wantListings.update(id, data) : api.put(`/want-listings/${id}`, data),
     archive: (id) =>
       useMocks ? mockApi.wantListings.archive(id) : api.patch(`/want-listings/${id}/archive`),
+    priceDistribution: () => api.get('/want-listings/price-distribution'),
   },
   vehicles: {
     list: (params) =>

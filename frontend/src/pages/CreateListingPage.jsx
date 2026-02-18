@@ -16,6 +16,7 @@ const initialForm = {
   budgetMin: '', budgetMax: '', zipCode: '', radius: '',
   mileageMax: '', description: '', transmission: 'Any',
   drivetrain: 'Any', condition: 'Any', features: [],
+  featuresMustHave: [], featuresNiceToHave: [],
   vehicleType: null, makeOther: '', modelOther: '',
 }
 
@@ -118,7 +119,8 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
     if (form.transmission === 'Any') updates.transmission = info.defaultTransmission
     if (form.drivetrain === 'Any') updates.drivetrain = info.defaultDrivetrain
     if (!form.vehicleType) updates.vehicleType = info.type
-    if ((!form.features || form.features.length === 0) && info.suggestedFeatures.length > 0) {
+    if ((!form.features || form.features.length === 0) && (!form.featuresNiceToHave || form.featuresNiceToHave.length === 0) && info.suggestedFeatures.length > 0) {
+      updates.featuresNiceToHave = info.suggestedFeatures
       updates.features = info.suggestedFeatures
     }
 
@@ -197,7 +199,9 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
         transmission: form.transmission === 'Any' ? null : form.transmission,
         drivetrain: form.drivetrain === 'Any' ? null : form.drivetrain,
         condition: form.condition === 'Any' ? null : form.condition,
-        features: form.features || [],
+        features: [...(form.featuresMustHave || []), ...(form.featuresNiceToHave || [])],
+        featuresMustHave: form.featuresMustHave || [],
+        featuresNiceToHave: form.featuresNiceToHave || [],
         vehicleType: form.vehicleType || null,
       }
       delete data.radius
@@ -399,7 +403,12 @@ export function ListingForm({ initial = initialForm, onSubmit, submitLabel = 'Cr
         </div>
         <div className="form-group">
           <label>Features</label>
-          <FeatureTagPicker selected={form.features || []} onChange={(features) => setForm((prev) => ({ ...prev, features }))} />
+          <FeatureTagPicker
+            mustHave={form.featuresMustHave || []}
+            niceToHave={form.featuresNiceToHave || []}
+            onChangeMustHave={(featuresMustHave) => setForm((prev) => ({ ...prev, featuresMustHave, features: [...featuresMustHave, ...(prev.featuresNiceToHave || [])] }))}
+            onChangeNiceToHave={(featuresNiceToHave) => setForm((prev) => ({ ...prev, featuresNiceToHave, features: [...(prev.featuresMustHave || []), ...featuresNiceToHave] }))}
+          />
         </div>
         <div className="form-group">
           <label>Description</label>
@@ -459,7 +468,9 @@ export default function CreateListingPage() {
         transmission: listingData.transmission || null,
         drivetrain: listingData.drivetrain || null,
         condition: listingData.condition || null,
-        features: listingData.features || [],
+        features: listingData.features || [...(listingData.featuresMustHave || []), ...(listingData.featuresNiceToHave || [])],
+        featuresMustHave: listingData.featuresMustHave || [],
+        featuresNiceToHave: listingData.featuresNiceToHave || [],
         vehicleType: listingData.vehicleType || null,
       }
       await apiService.wantListings.create(data)
@@ -494,7 +505,9 @@ export default function CreateListingPage() {
     transmission: listingData.transmission || 'Any',
     drivetrain: listingData.drivetrain || 'Any',
     condition: listingData.condition || 'Any',
-    features: listingData.features || [],
+    features: listingData.features || [...(listingData.featuresMustHave || []), ...(listingData.featuresNiceToHave || [])],
+    featuresMustHave: listingData.featuresMustHave || [],
+    featuresNiceToHave: listingData.featuresNiceToHave || [],
     vehicleType: listingData.vehicleType || null,
   })
 
@@ -507,7 +520,7 @@ export default function CreateListingPage() {
 
   return (
     <div className="create-listing-page">
-      <h1>Create Want Listing</h1>
+      <h1>Create Want-Listing</h1>
 
       {aiUnavailable && (
         <div className="ai-unavailable-banner">

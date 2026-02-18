@@ -81,6 +81,57 @@
   font-weight: var(--font-semibold);
 }
 
+/* Desktop icon links */
+.navbar-icon-link {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-full);
+  transition: color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.navbar-icon-link:hover {
+  color: var(--color-accent);
+  background: var(--color-accent-light);
+  transform: scale(1.1);
+  text-decoration: none;
+}
+
+.navbar-icon-link.active {
+  color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+/* Tooltip via data-tooltip */
+.navbar-icon-link::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.8);
+  padding: 4px 10px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.15s;
+  z-index: 10;
+}
+
+.navbar-icon-link:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
 /* Right side */
 .navbar-right {
   display: flex;

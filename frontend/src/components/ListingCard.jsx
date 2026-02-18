@@ -91,16 +91,25 @@ export default function ListingCard({ listing, onFavoriteToggle }) {
           </div>
         )}
 
-        {listing.features && listing.features.length > 0 && (
-          <div className="listing-card-features">
-            {listing.features.slice(0, 4).map((f) => (
-              <span key={f} className="tag-pill">{f}</span>
-            ))}
-            {listing.features.length > 4 && (
-              <span className="tag-pill">+{listing.features.length - 4}</span>
-            )}
-          </div>
-        )}
+        {(() => {
+          const mustHave = listing.featuresMustHave || []
+          const niceToHave = listing.featuresNiceToHave || []
+          const allPrioritized = [...mustHave.map(f => ({ f, priority: 'must' })), ...niceToHave.map(f => ({ f, priority: 'nice' }))]
+          const features = allPrioritized.length > 0
+            ? allPrioritized
+            : (listing.features || []).map(f => ({ f, priority: null }))
+          if (features.length === 0) return null
+          return (
+            <div className="listing-card-features">
+              {features.slice(0, 4).map(({ f, priority }) => (
+                <span key={f} className={`tag-pill${priority === 'must' ? ' tag-pill-must' : priority === 'nice' ? ' active' : ''}`}>{f}</span>
+              ))}
+              {features.length > 4 && (
+                <span className="tag-pill">+{features.length - 4}</span>
+              )}
+            </div>
+          )
+        })()}
 
         <div className="listing-card-buyer">
           <span className="listing-card-buyer-avatar">{buyerInitial}</span>

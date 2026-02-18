@@ -1,5 +1,44 @@
 .feature-tag-picker {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.feature-tag-picker-legend {
+  display: flex;
+  gap: var(--space-3);
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-nice::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.6;
+}
+
+.legend-must::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #059669;
+}
+
+.feature-tag-picker-pills,
+.feature-tag-picker {
+  display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
 }
@@ -7,4 +46,17 @@
 .feature-tag-picker .tag-pill {
   cursor: pointer;
   user-select: none;
+}
+
+/* Must-have pill style (green) */
+.tag-pill-must {
+  background: rgba(5, 150, 105, 0.12) !important;
+  color: #059669 !important;
+  border-color: rgba(5, 150, 105, 0.4) !important;
+  font-weight: 600;
+}
+
+.tag-pill-star {
+  font-size: 0.7em;
+  margin-right: 2px;
 }

@@ -56,7 +56,7 @@ export default function BuyerDashboardPage() {
 
       <section className="dashboard-section">
         <div className="dashboard-section-header">
-          <h2>My Want Listings</h2>
+          <h2>My Want-Listings</h2>
           <Link to="/buyer/create-listing" className="btn btn-primary btn-sm">+ New Listing</Link>
         </div>
         {listings.length === 0 ? (

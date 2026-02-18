@@ -1,11 +1,16 @@
 const pool = require('../db/pool');
 
 async function create(userId, data) {
+  // Compute combined features for backward compat
+  const mustHave = data.featuresMustHave || [];
+  const niceToHave = data.featuresNiceToHave || [];
+  const combinedFeatures = data.features || [...mustHave, ...niceToHave];
+
   const result = await pool.query(
-    `INSERT INTO want_listings (user_id, title, make, model, year_min, year_max, budget_min, budget_max, zip_code, radius_miles, mileage_max, description, transmission, drivetrain, condition, features, vehicle_type)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+    `INSERT INTO want_listings (user_id, title, make, model, year_min, year_max, budget_min, budget_max, zip_code, radius_miles, mileage_max, description, transmission, drivetrain, condition, features, vehicle_type, features_must_have, features_nice_to_have)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
      RETURNING *`,
-    [userId, data.title, data.make, data.model, data.yearMin, data.yearMax, data.budgetMin, data.budgetMax, data.zipCode, data.radiusMiles, data.mileageMax, data.description, data.transmission || null, data.drivetrain || null, data.condition || null, data.features || [], data.vehicleType || null]
+    [userId, data.title, data.make, data.model, data.yearMin, data.yearMax, data.budgetMin, data.budgetMax, data.zipCode, data.radiusMiles, data.mileageMax, data.description, data.transmission || null, data.drivetrain || null, data.condition || null, combinedFeatures, data.vehicleType || null, mustHave, niceToHave]
   );
   return result.rows[0];
 }
@@ -30,6 +35,8 @@ async function update(id, data) {
     condition: 'condition',
     features: 'features',
     vehicleType: 'vehicle_type',
+    featuresMustHave: 'features_must_have',
+    featuresNiceToHave: 'features_nice_to_have',
   };
 
   for (const [key, col] of Object.entries(columnMap)) {
@@ -219,4 +226,23 @@ async function findByIdWithBuyer(id) {
   return result.rows[0] || null;
 }
 
-module.exports = { create, findById, update, archive, listActive, listByUser, findByIdWithBuyer };
+async function priceDistribution() {
+  const result = await pool.query(
+    `SELECT width_bucket(budget_max, 0, 200000, 20) AS bucket, COUNT(*)::int AS count
+     FROM want_listings
+     WHERE status = 'active' AND budget_max IS NOT NULL
+     GROUP BY bucket ORDER BY bucket`
+  );
+  // Fill in missing buckets with 0
+  const bucketMap = {};
+  for (const row of result.rows) {
+    bucketMap[row.bucket] = row.count;
+  }
+  const buckets = [];
+  for (let i = 1; i <= 20; i++) {
+    buckets.push({ bucket: i, count: bucketMap[i] || 0 });
+  }
+  return buckets;
+}
+
+module.exports = { create, findById, update, archive, listActive, listByUser, findByIdWithBuyer, priceDistribution };

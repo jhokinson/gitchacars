@@ -1,0 +1,21 @@
+.price-histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 52px;
+  padding: 0 2px;
+  margin-bottom: 4px;
+}
+
+.price-histogram-bar {
+  flex: 1;
+  min-width: 0;
+  background: var(--color-border);
+  border-radius: 2px 2px 0 0;
+  transition: background 0.2s;
+}
+
+.price-histogram-bar.in-range {
+  background: var(--color-accent);
+  opacity: 0.7;
+}

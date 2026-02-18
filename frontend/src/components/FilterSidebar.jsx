@@ -37,6 +37,7 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
   const [aiAvailable, setAiAvailable] = useState(true)
   const [makesList, setMakesList] = useState(FALLBACK_MAKES)
   const [modelsList, setModelsList] = useState([])
+  const [priceHistogram, setPriceHistogram] = useState([])
 
   useEffect(() => {
     apiService.ai.status()
@@ -51,6 +52,13 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
         }
       })
       .catch(() => {}) // keep fallback
+    // Fetch price distribution for histogram
+    apiService.wantListings.priceDistribution()
+      .then(res => {
+        const data = res.data.data
+        if (Array.isArray(data)) setPriceHistogram(data)
+      })
+      .catch(() => {})
   }, [])
 
   const handleSelectAction = (action) => {
@@ -198,11 +206,6 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
           </span>
           {chevron(sections[key])}
         </button>
-        {count > 0 && (
-          <button className="filter-section-clear" onClick={(e) => { e.stopPropagation(); clearSection(key) }}>
-            Clear
-          </button>
-        )}
       </div>
     )
   }
@@ -275,6 +278,7 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
               valueMin={filters.budgetMin || 0}
               valueMax={filters.budgetMax || 200000}
               onChange={(vMin, vMax) => onFilterChange({ ...filters, budgetMin: vMin, budgetMax: vMax })}
+              histogram={priceHistogram}
             />
           </div>
         )}
@@ -323,16 +327,13 @@ export default function FilterSidebar({ filters, onFilterChange, onClose }) {
         {sectionHeader('location', 'Location')}
         {sections.location && (
           <div className="filter-section-body">
-            <div className="filter-input-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <input
-                type="text"
-                placeholder="Zip code"
-                value={filters.zipCode || ''}
-                onChange={(e) => update('zipCode', e.target.value)}
-                maxLength={5}
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="City or ZIP"
+              value={filters.zipCode || ''}
+              onChange={(e) => update('zipCode', e.target.value)}
+              className="filter-text-input"
+            />
             <CustomSelect
               options={RADIUS_OPTIONS}
               value={filters.radius || ''}

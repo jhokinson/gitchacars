@@ -58,12 +58,12 @@ async function getVehicleMakes(req, res, next) {
 
     // Try NHTSA API
     try {
-      const response = await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json', { signal: AbortSignal.timeout(5000) });
+      const response = await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/car?format=json', { signal: AbortSignal.timeout(5000) });
       const json = await response.json();
       const makes = json.Results
-        .filter(r => r.Make_Name && r.Make_Name.trim())
+        .filter(r => r.MakeName && r.MakeName.trim())
         .map(r => {
-          const name = normalizeName(r.Make_Name);
+          const name = normalizeName(r.MakeName);
           return { value: name, label: name };
         })
         .sort((a, b) => a.label.localeCompare(b.label));

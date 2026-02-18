@@ -70,13 +70,13 @@ export default function DashboardPage() {
       {/* My Want Listings */}
       <section className="dashboard-section">
         <div className="dashboard-section-header">
-          <h2>My Want Listings ({listings.length})</h2>
-          <Link to="/create-listing" className="btn btn-primary btn-sm">+ Create Want Listing</Link>
+          <h2>My Want-Listings ({listings.length})</h2>
+          <Link to="/create-listing" className="btn btn-primary btn-sm">+ Create Want-Listing</Link>
         </div>
         {listings.length === 0 ? (
           <div className="dashboard-empty">
             <LottieAnimation animationData={emptySearchAnim} size={120} />
-            <p>You haven't posted any want listings yet.</p>
+            <p>You haven't posted any Want-Listings yet.</p>
             <Link to="/create-listing" className="btn btn-accent btn-sm" style={{ marginTop: 'var(--space-3)', display: 'inline-flex' }}>Create Your First Listing</Link>
           </div>
         ) : (

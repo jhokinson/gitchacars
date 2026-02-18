@@ -20,6 +20,8 @@ function formatListing(row) {
     drivetrain: row.drivetrain,
     condition: row.condition,
     features: row.features || [],
+    featuresMustHave: row.features_must_have || [],
+    featuresNiceToHave: row.features_nice_to_have || [],
     vehicleType: row.vehicle_type || null,
     status: row.status,
     createdAt: row.created_at,
@@ -32,7 +34,7 @@ function formatListing(row) {
 
 async function createListing(req, res, next) {
   try {
-    const { title, make, model, yearMin, yearMax, budgetMin, budgetMax, zipCode, radiusMiles, mileageMax, description, transmission, drivetrain, condition, features } = req.body;
+    const { title, make, model, yearMin, yearMax, budgetMin, budgetMax, zipCode, radiusMiles, mileageMax, description, transmission, drivetrain, condition, features, featuresMustHave, featuresNiceToHave } = req.body;
 
     const fields = {};
     if (!title) fields.title = 'Title is required';
@@ -164,4 +166,13 @@ async function getListing(req, res, next) {
   }
 }
 
-module.exports = { createListing, updateListing, archiveListing, listListings, myListings, getListing };
+async function priceDistribution(req, res, next) {
+  try {
+    const buckets = await wantListingModel.priceDistribution();
+    success(res, buckets);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { createListing, updateListing, archiveListing, listListings, myListings, getListing, priceDistribution };
